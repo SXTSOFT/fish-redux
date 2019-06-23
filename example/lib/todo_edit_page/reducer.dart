@@ -9,7 +9,7 @@ Reducer<TodoEditState> buildReducer() {
   });
 }
 
-TodoEditState _update(TodoEditState state, Action action) {
+TodoEditState _update(TodoEditState state, FAction action) {
   final Map<String, String> update = action.payload ?? <String, String>{};
   final TodoEditState newState = state.clone();
   newState.toDo.title = update['name'] ?? newState.toDo.title;

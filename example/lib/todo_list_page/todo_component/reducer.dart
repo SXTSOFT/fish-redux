@@ -10,7 +10,7 @@ Reducer<ToDoState> buildReducer() {
   });
 }
 
-ToDoState _edit(ToDoState state, Action action) {
+ToDoState _edit(ToDoState state, FAction action) {
   final ToDoState toDo = action.payload;
   if (state.uniqueId == toDo.uniqueId) {
     return state.clone()
@@ -20,7 +20,7 @@ ToDoState _edit(ToDoState state, Action action) {
   return state;
 }
 
-ToDoState _markDone(ToDoState state, Action action) {
+ToDoState _markDone(ToDoState state, FAction action) {
   final String uniqueId = action.payload;
   if (state.uniqueId == uniqueId) {
     return state.clone()..isDone = !state.isDone;

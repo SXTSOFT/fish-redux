@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'basic.dart';
 
-Reducer<T> _noop<T>() => (T state, Action action) => state;
+Reducer<T> _noop<T>() => (T state, FAction action) => state;
 
 typedef _VoidCallback = void Function();
 
@@ -19,7 +19,7 @@ Store<T> _createBasicStore<T>(T preloadedState, Reducer<T> reducer) {
   final StreamController<T> notifyController =
       StreamController<T>.broadcast(sync: true);
 
-  final Dispatch dispatch = (Action action) {
+  final Dispatch dispatch = (FAction action) {
     assert(action != null && action.type != null, 'Invalide action.');
     assert(!isDispatching, 'Reducer is executing!');
 
@@ -51,7 +51,7 @@ Store<T> _createBasicStore<T>(T preloadedState, Reducer<T> reducer) {
     ..dispatch = dispatch
     ..replaceReducer = (Reducer<T> replaceReducer) {
       reducer = replaceReducer ?? _noop;
-      dispatch(const Action(ActionType.replace));
+      dispatch(const FAction(ActionType.replace));
     }
     ..subscribe = (_VoidCallback listener) {
       assert(listener != null, 'Invalide listener!');

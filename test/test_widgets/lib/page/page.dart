@@ -30,7 +30,7 @@ Widget toDoView(ToDo toDo, BuildContext context, Dispatch dispatch) {
                 ),
                 onTap: () {
                   print('dispatch remove');
-                  dispatch(Action(ToDoListAction.remove, payload: toDo));
+                  dispatch(FAction(ToDoListAction.remove, payload: toDo));
                 },
               ),
               GestureDetector(
@@ -44,12 +44,12 @@ Widget toDoView(ToDo toDo, BuildContext context, Dispatch dispatch) {
                 ),
                 onTap: () {
                   print('dispatch onEdit');
-                  dispatch(Action(ToDoListAction.onEdit, payload: toDo));
+                  dispatch(FAction(ToDoListAction.onEdit, payload: toDo));
                 },
                 onLongPress: () {
                   print('dispatch middlewareEdit');
                   dispatch(
-                      Action(ToDoListAction.middlewareEdit, payload: toDo));
+                      FAction(ToDoListAction.middlewareEdit, payload: toDo));
                 },
               )
             ],
@@ -67,7 +67,7 @@ Widget toDoView(ToDo toDo, BuildContext context, Dispatch dispatch) {
           onTap: () {
             if (!toDo.isDone) {
               print('dispatch markDone');
-              dispatch(Action(ToDoListAction.markDone, payload: toDo));
+              dispatch(FAction(ToDoListAction.markDone, payload: toDo));
             }
           },
         )
@@ -105,7 +105,7 @@ Widget toDoListView(
             ),
             onTap: () {
               print('dispatch Add');
-              dispatch(Action(ToDoListAction.onAdd));
+              dispatch(FAction(ToDoListAction.onAdd));
             },
           )),
           Expanded(
@@ -119,11 +119,11 @@ Widget toDoListView(
                   ),
                   onTap: () {
                     print('dispatch KnowException');
-                    dispatch(Action(ToDoListAction.onKnowException));
+                    dispatch(FAction(ToDoListAction.onKnowException));
                   },
                   onLongPress: () {
                     print('dispatch UnKnowException');
-                    dispatch(Action(ToDoListAction.onUnKnowException));
+                    dispatch(FAction(ToDoListAction.onUnKnowException));
                   }))
         ],
       )
@@ -131,10 +131,10 @@ Widget toDoListView(
   );
 }
 
-bool toDoListEffect(Action action, Context<ToDoList> ctx) {
+bool toDoListEffect(FAction action, Context<ToDoList> ctx) {
   if (action.type == ToDoListAction.onAdd) {
     print('onAdd');
-    ctx.dispatch(Action(ToDoListAction.add, payload: ToDo.mock()));
+    ctx.dispatch(FAction(ToDoListAction.add, payload: ToDo.mock()));
 
     return true;
   } else if (action.type == ToDoListAction.onEdit) {
@@ -149,7 +149,7 @@ bool toDoListEffect(Action action, Context<ToDoList> ctx) {
     toDo = toDo.clone();
     toDo.desc = '${toDo.desc}-effect';
 
-    ctx.dispatch(Action(ToDoListAction.edit, payload: toDo));
+    ctx.dispatch(FAction(ToDoListAction.edit, payload: toDo));
     return true;
   } else if (action.type == ToDoListAction.onKnowException) {
     throw KnowException();
@@ -160,7 +160,7 @@ bool toDoListEffect(Action action, Context<ToDoList> ctx) {
   return false;
 }
 
-dynamic toDoListEffectAsync(Action action, Context<ToDoList> ctx) {
+dynamic toDoListEffectAsync(FAction action, Context<ToDoList> ctx) {
   if (action.type == ToDoListAction.onAdd ||
       action.type == ToDoListAction.onEdit ||
       action.type == ToDoListAction.onKnowException ||
@@ -173,9 +173,9 @@ dynamic toDoListEffectAsync(Action action, Context<ToDoList> ctx) {
 }
 
 OnAction toDoListHigherEffect(Context<ToDoList> ctx) =>
-    (Action action) => toDoListEffect(action, ctx);
+    (FAction action) => toDoListEffect(action, ctx);
 
-ToDoList toDoListReducer(ToDoList state, Action action) {
+ToDoList toDoListReducer(ToDoList state, FAction action) {
   print('onReduce:${action.type}');
   if (!(action.payload is ToDo)) return state;
 
@@ -217,7 +217,7 @@ Composeable<Dispatch> toDoListMiddleware({
   Dispatch dispatch,
   Get<ToDoList> getState,
 }) =>
-    (next) => (Action action) {
+    (next) => (FAction action) {
           if (action.type == ToDoListAction.middlewareEdit) {
             assert(action.payload is ToDo);
 
@@ -230,7 +230,7 @@ Composeable<Dispatch> toDoListMiddleware({
             toDo = toDo.clone();
             toDo.desc = '${toDo.desc}-middleware';
 
-            dispatch(Action(ToDoListAction.edit, payload: toDo));
+            dispatch(FAction(ToDoListAction.edit, payload: toDo));
           }
 
           next(action);

@@ -4,10 +4,10 @@ import 'action.dart';
 import 'component.dart';
 import 'state.dart';
 
-bool toDoListEffect(Action action, Context<ToDoList> ctx) {
+bool toDoListEffect(FAction action, Context<ToDoList> ctx) {
   if (action.type == ToDoListAction.onAdd) {
     print('onAdd');
-    ctx.dispatch(Action(ToDoListAction.add, payload: ToDo.mock()));
+    ctx.dispatch(FAction(ToDoListAction.add, payload: ToDo.mock()));
 
     return true;
   }
@@ -15,7 +15,7 @@ bool toDoListEffect(Action action, Context<ToDoList> ctx) {
   return false;
 }
 
-dynamic toDoListEffectAsync(Action action, Context<ToDoList> ctx) {
+dynamic toDoListEffectAsync(FAction action, Context<ToDoList> ctx) {
   if (action.type == ToDoListAction.onAdd) {
     return Future.delayed(
         Duration(seconds: 1), () => toDoListEffect(action, ctx));
@@ -25,9 +25,9 @@ dynamic toDoListEffectAsync(Action action, Context<ToDoList> ctx) {
 }
 
 OnAction toDoListHigherEffect(Context<ToDoList> ctx) =>
-    (Action action) => toDoListEffect(action, ctx);
+    (FAction action) => toDoListEffect(action, ctx);
 
-ToDoList toDoListReducer(ToDoList state, Action action) {
+ToDoList toDoListReducer(ToDoList state, FAction action) {
   print('onReduce:${action.type}');
   if (!(action.payload is ToDo)) return state;
 

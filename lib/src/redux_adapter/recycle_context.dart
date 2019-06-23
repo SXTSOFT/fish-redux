@@ -22,7 +22,7 @@ class RecycleContext<T> extends DefaultContext<T> {
         );
 
   @override
-  void onLifecycle(Action action) {
+  void onLifecycle(FAction action) {
     _cachedMap.forEach((Object key, List<ContextSys<Object>> list) {
       for (ContextSys<Object> sub in list) {
         sub.onLifecycle(action);

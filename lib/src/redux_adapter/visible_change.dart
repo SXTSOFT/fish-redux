@@ -74,7 +74,7 @@ class _VisibleChangeDispatch extends AutoDispose {
 
   _VisibleChangeDispatch(this.dispatch);
 
-  void onAction(Action action) {
+  void onAction(FAction action) {
     if (action.type == Lifecycle.appear) {
       assert(_appearsCount >= 0);
       if (_appearsCount == 0) {

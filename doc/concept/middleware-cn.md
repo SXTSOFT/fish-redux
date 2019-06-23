@@ -12,7 +12,7 @@ Middleware<T> logMiddleware<T>({
   return ({Dispatch dispatch, Get<T> getState}) {
     return (Dispatch next) {
       return isDebug()
-          ? (Action action) {
+          ? (FAction action) {
               print('---------- [$tag] ----------');
               print('[$tag] ${action.type} ${action.payload}');
 

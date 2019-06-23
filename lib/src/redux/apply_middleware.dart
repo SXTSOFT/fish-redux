@@ -11,14 +11,14 @@ StoreEnhancer<T> applyMiddleware<T>(List<Middleware<T>> middlewares) {
 
           final Store<T> store = creator(initState, reducer);
           final Dispatch initialValue = store.dispatch;
-          store.dispatch = (Action action) {
+          store.dispatch = (FAction action) {
             throw Exception(
                 'Dispatching while constructing your middleware is not allowed. '
                 'Other middleware would not be applied to this dispatch.');
           };
           store.dispatch = middlewares
               .map((Middleware<T> middleware) => middleware(
-                    dispatch: (Action action) => store.dispatch(action),
+                    dispatch: (FAction action) => store.dispatch(action),
                     getState: store.getState,
                   ))
               .fold(

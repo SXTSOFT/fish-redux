@@ -4,7 +4,7 @@ import '../todo_component/component.dart';
 enum ToDoListAction { add }
 
 class ToDoListActionCreator {
-  static Action add(ToDoState state) {
-    return Action(ToDoListAction.add, payload: state);
+  static FAction add(ToDoState state) {
+    return FAction(ToDoListAction.add, payload: state);
   }
 }

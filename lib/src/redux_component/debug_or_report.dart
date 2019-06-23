@@ -11,21 +11,21 @@ enum $DebugOrReport {
 }
 
 class $DebugOrReportCreator {
-  static Action debugUpdate(String name) =>
-      Action($DebugOrReport.debugUpdate, payload: name);
+  static FAction debugUpdate(String name) =>
+      FAction($DebugOrReport.debugUpdate, payload: name);
 
-  static Action reportBuildError(Object exception, StackTrace stackTrace) =>
-      Action($DebugOrReport.reportBuildError,
+  static FAction reportBuildError(Object exception, StackTrace stackTrace) =>
+      FAction($DebugOrReport.reportBuildError,
           payload: flutterErrorDetails(exception, stackTrace));
 
-  static Action reportSetStateError(
+  static FAction reportSetStateError(
           FlutterError exception, StackTrace stackTrace) =>
-      Action($DebugOrReport.reportSetStateError,
+      FAction($DebugOrReport.reportSetStateError,
           payload: flutterErrorDetails(exception, stackTrace));
 
-  static Action reportOtherError(
+  static FAction reportOtherError(
           FlutterError exception, StackTrace stackTrace) =>
-      Action($DebugOrReport.reportOtherError,
+      FAction($DebugOrReport.reportOtherError,
           payload: flutterErrorDetails(exception, stackTrace));
 
   static FlutterErrorDetails flutterErrorDetails(
@@ -40,7 +40,7 @@ class $DebugOrReportCreator {
 
 /// action-type which starts with '$' should be interruptted,
 /// like $DebugOrReport
-bool shouldBeInterrupttedBeforeReducer(Action action) {
+bool shouldBeInterrupttedBeforeReducer(FAction action) {
   final Object actionType = action.type;
   return actionType != null && actionType.toString().startsWith('\$');
 }

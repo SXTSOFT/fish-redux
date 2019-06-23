@@ -16,7 +16,7 @@ class ToDoComponentInstrument extends TestComponent<ToDo> {
             view: toDoView,
             reducer: toDoReducer,
             effect: instrumentEffect<ToDo>(toDoEffect,
-                (Action action, Get<ToDo> getState) {
+                (FAction action, Get<ToDo> getState) {
               if (action.type == ToDoAction.onEdit) {
                 track.append('toDo-onEdit');
                 print('toDo-onEdit');
@@ -79,11 +79,11 @@ Widget pageView(
             ),
             onTap: () {
               print('dispatch Add');
-              dispatch(const Action(ToDoListAction.onAdd));
+              dispatch(const FAction(ToDoListAction.onAdd));
             },
             onLongPress: () {
               print('dispatch broadcast');
-              dispatch(const Action(ToDoListAction.onBroadcast));
+              dispatch(const FAction(ToDoListAction.onBroadcast));
             },
           )),
         ],
@@ -118,7 +118,7 @@ void main() {
                 return state;
               },
               view: pageView,
-              reducer: (ToDoList state, Action action) {
+              reducer: (ToDoList state, FAction action) {
                 if (action.type == ToDoListAction.remove) {
                   final ToDoList newState = state.clone();
                   newState.list.clear();

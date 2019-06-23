@@ -8,7 +8,7 @@
 ![image.png | left | 747x399](https://cdn.nlark.com/lark/0/2018/png/82574/1545365233153-4c8105b4-050c-49e6-be02-dbf28a861caa.png)
 
 Self-First-Broadcast。
-发出的 Action，自己优先处理，否则广播给其他组件和 Redux 处理。
+发出的 FAction，自己优先处理，否则广播给其他组件和 Redux 处理。
 
 最终我们通过一个简单而直观的 dispatch 完成了组件内，组件间（父到子，子到父，兄弟间等）的通信。
 

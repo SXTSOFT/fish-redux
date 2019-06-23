@@ -74,19 +74,19 @@ class DefaultContext<T> extends ContextSys<T> with _ExtraMixin {
   }
 
   @override
-  void onLifecycle(Action action) {
+  void onLifecycle(FAction action) {
     assert(_throwIfDisposed());
     _dispatch(action);
   }
 
   @override
-  void appBroadcast(Action action) {
+  void appBroadcast(FAction action) {
     assert(_throwIfDisposed());
     AppProvider.appBroadcast(context, action);
   }
 
   @override
-  void pageBroadcast(Action action, {bool excluedSelf}) {
+  void pageBroadcast(FAction action, {bool excluedSelf}) {
     assert(_throwIfDisposed());
     store.sendBroadcast(
       action,
@@ -114,7 +114,7 @@ class _TwinceContext<T> extends ContextSys<T> with _ExtraMixin {
   }
 
   @override
-  void appBroadcast(Action action) => AppProvider.appBroadcast(context, action);
+  void appBroadcast(FAction action) => AppProvider.appBroadcast(context, action);
 
   @override
   ListAdapter buildAdapter() => sidecarCtx.buildAdapter();
@@ -129,7 +129,7 @@ class _TwinceContext<T> extends ContextSys<T> with _ExtraMixin {
   Dispatch get dispatch => mainCtx.dispatch;
 
   @override
-  void onLifecycle(Action action) {
+  void onLifecycle(FAction action) {
     mainCtx.onLifecycle(action);
     sidecarCtx.onLifecycle(action);
   }
@@ -138,7 +138,7 @@ class _TwinceContext<T> extends ContextSys<T> with _ExtraMixin {
   T get state => mainCtx.state;
 
   @override
-  void pageBroadcast(Action action, {bool excluedSelf}) =>
+  void pageBroadcast(FAction action, {bool excluedSelf}) =>
       mainCtx.pageBroadcast(action, excluedSelf: excluedSelf);
 }
 

@@ -1,7 +1,7 @@
 -   **[Introduction](introduction/README.md)**
 -   **Core Concepts**
     -   [Redux](concept/redux.md)
-        -   [Action](concept/action.md)
+        -   [FAction](concept/action.md)
         -   [Connector](concept/connector.md)
         -   [Reducer](concept/reducer.md)
         -   [Middleware](concept/middleware.md)

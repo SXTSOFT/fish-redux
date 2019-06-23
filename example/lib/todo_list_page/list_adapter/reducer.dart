@@ -12,14 +12,14 @@ Reducer<PageState> buildReducer() {
   });
 }
 
-PageState _add(PageState state, Action action) {
+PageState _add(PageState state, FAction action) {
   final ToDoState toDo = action.payload;
   final PageState newState = state.clone();
   newState.toDos.add(toDo);
   return newState;
 }
 
-PageState _remove(PageState state, Action action) {
+PageState _remove(PageState state, FAction action) {
   final String unique = action.payload;
   final PageState newState = state.clone();
   newState.toDos.removeWhere((ToDoState state) => state.uniqueId == unique);

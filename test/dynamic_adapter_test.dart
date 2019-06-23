@@ -19,11 +19,11 @@ class ToDoComponentInstrument extends TestComponent<ToDo> {
             track.append('toDo-build', state.clone());
           }),
           reducer: instrumentReducer<ToDo>(toDoReducer,
-              change: (ToDo state, Action action) {
+              change: (ToDo state, FAction action) {
             track.append('toDo-onReduce', state.clone());
           }),
           effect: instrumentEffect<ToDo>(toDoEffect,
-              (Action action, Get<ToDo> getState) {
+              (FAction action, Get<ToDo> getState) {
             if (action.type == ToDoAction.onEdit) {
               track.append('toDo-onEdit', getState().clone());
             } else if (action.type == ToDoAction.broadcast) {
@@ -45,7 +45,7 @@ class ToDoComponentNoReducer extends TestComponent<ToDo> {
             track.append('toDo-build', state.clone());
           }),
           effect: instrumentEffect<ToDo>(toDoEffect,
-              (Action action, Get<ToDo> getState) {
+              (FAction action, Get<ToDo> getState) {
             if (action.type == ToDoAction.onEdit) {
               track.append('toDo-onEdit', getState().clone());
             } else if (action.type == ToDoAction.broadcast) {
@@ -79,11 +79,11 @@ Dependencies<ToDoList> toDoListDependencies(final Track track,
                       beans.map<ToDo>((ItemBean bean) => bean.data).toList());
                 }),
             reducer: instrumentReducer<ToDoList>(toDoListReducer,
-                change: (ToDoList state, Action action) {
+                change: (ToDoList state, FAction action) {
               track.append('adapter-onReduce', state.clone());
             }),
             effect: instrumentEffect<ToDoList>(toDoListEffect,
-                (Action action, Get<ToDoList> getState) {
+                (FAction action, Get<ToDoList> getState) {
               if (action.type == ToDoListAction.onAdd) {
                 track.append('adapter-onAdd', getState().clone());
               } else if (action.type == ToDoAction.broadcast) {
@@ -254,27 +254,27 @@ void main() {
             Pin('toDo-build', mockState.list[3].clone()),
             Pin('toDo-onReduce', () {
               mockState.list[0] = toDoReducer(mockState.list[0],
-                  Action(ToDoAction.markDone, payload: mockState.list[0]));
+                  FAction(ToDoAction.markDone, payload: mockState.list[0]));
               return mockState.list[0].clone();
             }),
             Pin('page-build', mockState.clone()),
             Pin('toDo-build', mockState.list[0].clone()),
             Pin('toDo-onReduce', () {
               mockState.list[1] = toDoReducer(mockState.list[1],
-                  Action(ToDoAction.markDone, payload: mockState.list[1]));
+                  FAction(ToDoAction.markDone, payload: mockState.list[1]));
               return mockState.list[1].clone();
             }),
             Pin('page-build', mockState.clone()),
             Pin('toDo-build', mockState.list[1].clone()),
             Pin('adapter-onReduce', () {
               mockState = toDoListReducer(mockState,
-                  Action(ToDoListAction.remove, payload: mockState.list[2]));
+                  FAction(ToDoListAction.remove, payload: mockState.list[2]));
               return mockState.clone();
             }),
             Pin('page-build', mockState.clone()),
             Pin('adapter-onReduce', () {
               mockState = toDoListReducer(mockState,
-                  Action(ToDoListAction.remove, payload: mockState.list[2]));
+                  FAction(ToDoListAction.remove, payload: mockState.list[2]));
               return mockState.clone();
             }),
             Pin('page-build', mockState.clone()),
@@ -323,7 +323,7 @@ void main() {
               final ToDo toDo = mockState.list[0].clone();
               toDo.desc = '${toDo.desc}-effect';
               mockState.list[0] =
-                  toDoReducer(toDo, Action(ToDoAction.edit, payload: toDo));
+                  toDoReducer(toDo, FAction(ToDoAction.edit, payload: toDo));
               return mockState.list[0].clone();
             }),
             Pin('page-build', mockState.clone()),
@@ -333,7 +333,7 @@ void main() {
               final ToDo toDo = mockState.list[1].clone();
               toDo.desc = '${toDo.desc}-effect';
               mockState.list[1] =
-                  toDoReducer(toDo, Action(ToDoAction.edit, payload: toDo));
+                  toDoReducer(toDo, FAction(ToDoAction.edit, payload: toDo));
               return mockState.list[1].clone();
             }),
             Pin('page-build', mockState.clone()),
@@ -341,7 +341,7 @@ void main() {
             Pin('adapter-onAdd', mockState.clone()),
             Pin('adapter-onReduce', () {
               mockState = toDoListReducer(
-                  mockState, Action(ToDoListAction.add, payload: ToDo.mock()));
+                  mockState, FAction(ToDoListAction.add, payload: ToDo.mock()));
               return mockState.clone();
             }),
             Pin('page-build', mockState.clone()),
@@ -379,7 +379,7 @@ void main() {
             Pin('adapter-onAdd', mockState.clone()),
             Pin('adapter-onReduce', () {
               mockState = toDoListReducer(
-                  mockState, Action(ToDoListAction.add, payload: ToDo.mock()));
+                  mockState, FAction(ToDoListAction.add, payload: ToDo.mock()));
               return mockState.clone();
             }),
             Pin('page-build', mockState.clone()),

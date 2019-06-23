@@ -12,7 +12,7 @@ Effect<TodoEditState> buildEffect() {
   });
 }
 
-void _init(Action action, Context<TodoEditState> ctx) {
+void _init(FAction action, Context<TodoEditState> ctx) {
   ctx.state.nameEditController.addListener(() {
     ctx.dispatch(
         ToDoEditActionCreator.update(ctx.state.nameEditController.text, null));
@@ -24,6 +24,6 @@ void _init(Action action, Context<TodoEditState> ctx) {
   });
 }
 
-void _onDone(Action action, Context<TodoEditState> ctx) {
+void _onDone(FAction action, Context<TodoEditState> ctx) {
   Navigator.of(ctx.context).pop<ToDoState>(ctx.state.toDo);
 }

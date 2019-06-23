@@ -5,7 +5,7 @@ class _Broadcast<T> implements Broadcast {
   final List<OnAction> _onActionContainer = <OnAction>[];
 
   @override
-  void sendBroadcast(Action action, {OnAction excluded}) {
+  void sendBroadcast(FAction action, {OnAction excluded}) {
     final List<OnAction> list = _onActionContainer
         .where((OnAction onAction) => onAction != excluded)
         .toList(growable: false);

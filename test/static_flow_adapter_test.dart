@@ -21,12 +21,12 @@ class ToDoComponentInstrument extends TestComponent<ToDo> {
             }),
             reducer: hasReducer
                 ? instrumentReducer<ToDo>(toDoReducer,
-                    change: (ToDo state, Action action) {
+                    change: (ToDo state, FAction action) {
                     track.append('toDo$index-onReduce', state.clone());
                   })
                 : null,
             effect: instrumentEffect<ToDo>(toDoEffect,
-                (Action action, Get<ToDo> getState) {
+                (FAction action, Get<ToDo> getState) {
               if (action.type == ToDoAction.onEdit) {
                 track.append('toDo$index-onEdit', getState().clone());
               } else if (action.type == ToDoAction.broadcast) {
@@ -45,12 +45,12 @@ class ToDoAdapterInstrument extends TestAdapter<ToDo> {
           })),
           reducer: hasReducer
               ? instrumentReducer<ToDo>(toDoReducer,
-                  change: (ToDo state, Action action) {
+                  change: (ToDo state, FAction action) {
                   track.append('toDo$index-onReduce', state.clone());
                 })
               : null,
           effect: instrumentEffect<ToDo>(toDoEffect,
-              (Action action, Get<ToDo> getState) {
+              (FAction action, Get<ToDo> getState) {
             if (action.type == ToDoAction.onEdit) {
               track.append('toDo$index-onEdit', getState().clone());
             } else if (action.type == ToDoAction.broadcast) {
@@ -94,11 +94,11 @@ Dependencies<ToDoList> toDoListDependencies(final Track track) =>
               set: (ToDoList toDoList, ToDo toDo) => toDoList.list[3] = toDo))
         ],
             reducer: instrumentReducer<ToDoList>(toDoListReducer,
-                change: (ToDoList state, Action action) {
+                change: (ToDoList state, FAction action) {
               track.append('adapter-onReduce', state.clone());
             }),
             effect: instrumentEffect<ToDoList>(toDoListEffect,
-                (Action action, Get<ToDoList> getState) {
+                (FAction action, Get<ToDoList> getState) {
               if (action.type == ToDoListAction.onAdd) {
                 track.append('adapter-onAdd', getState().clone());
               } else if (action.type == ToDoAction.broadcast) {
@@ -218,7 +218,7 @@ void main() {
 //            Pin('toDo3-build', mockState.list[3].clone()),
 //            Pin('toDo0-onReduce', () {
 //              mockState.list[0] = toDoReducer(mockState.list[0],
-//                      Action(ToDoAction.markDone, payload: mockState.list[0]))
+//                      FAction(ToDoAction.markDone, payload: mockState.list[0]))
 //                  .clone();
 //              return mockState.list[0].clone();
 //            }),
@@ -228,7 +228,7 @@ void main() {
 //            Pin('toDo3-build', mockState.list[3].clone()),
 //            Pin('toDo1-onReduce', () {
 //              mockState.list[1] = toDoReducer(mockState.list[1],
-//                      Action(ToDoAction.markDone, payload: mockState.list[1]))
+//                      FAction(ToDoAction.markDone, payload: mockState.list[1]))
 //                  .clone();
 //              return mockState.list[1].clone();
 //            }),
@@ -237,14 +237,14 @@ void main() {
 //            Pin('toDo3-build', mockState.list[3].clone()),
 //            Pin('adapter-onReduce', () {
 //              mockState = toDoListReducer(mockState,
-//                  Action(ToDoListAction.remove, payload: mockState.list[2]));
+//                  FAction(ToDoListAction.remove, payload: mockState.list[2]));
 //              return mockState.clone();
 //            }),
 //            Pin('page-build', mockState.clone()),
 //            Pin('toDo2-build', mockState.list[2].clone()),
 //            Pin('adapter-onReduce', () {
 //              mockState = toDoListReducer(mockState,
-//                  Action(ToDoListAction.remove, payload: mockState.list[3]));
+//                  FAction(ToDoListAction.remove, payload: mockState.list[3]));
 //              return mockState.clone();
 //            }),
 //            Pin('page-build', mockState.clone()),

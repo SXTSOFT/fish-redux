@@ -5,17 +5,17 @@ import 'action.dart';
 import 'component.dart';
 import '../test_base.dart';
 
-bool toDoListEffect(Action action, Context<ToDoList> ctx) {
+bool toDoListEffect(FAction action, Context<ToDoList> ctx) {
   if (action.type == ToDoListAction.onAdd) {
     print('adapter onAdd');
-    ctx.dispatch(Action(ToDoListAction.add, payload: ToDo.mock()));
+    ctx.dispatch(FAction(ToDoListAction.add, payload: ToDo.mock()));
     return true;
   }
 
   return false;
 }
 
-ToDoList toDoListReducer(ToDoList state, Action action) {
+ToDoList toDoListReducer(ToDoList state, FAction action) {
   print('onReduce:${action.type}');
   if (!(action.payload is ToDo)) return state;
 

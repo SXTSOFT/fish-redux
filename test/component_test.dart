@@ -20,12 +20,12 @@ class ToDoComponentInstrument extends TestComponent<ToDo> {
             }),
             reducer: hasReducer
                 ? instrumentReducer<ToDo>(toDoReducer,
-                    change: (ToDo state, Action action) {
+                    change: (ToDo state, FAction action) {
                     track.append('toDo$index-onReduce', state.clone());
                   })
                 : null,
             effect: instrumentEffect<ToDo>(toDoEffect,
-                (Action action, Get<ToDo> getState) {
+                (FAction action, Get<ToDo> getState) {
               if (action.type == ToDoAction.onEdit) {
                 track.append('toDo$index-onEdit', getState().clone());
               } else if (action.type == ToDoAction.broadcast) {
@@ -113,11 +113,11 @@ Widget pageView(
             ),
             onTap: () {
               print('dispatch Add');
-              dispatch(const Action(ToDoListAction.onAdd));
+              dispatch(const FAction(ToDoListAction.onAdd));
             },
             onLongPress: () {
               print('dispatch broadcast');
-              dispatch(const Action(ToDoListAction.onBroadcast));
+              dispatch(const FAction(ToDoListAction.onBroadcast));
             },
           )),
         ],
@@ -204,11 +204,11 @@ void main() {
                 track.append('page-build', state.clone());
               }),
               reducer: instrumentReducer<ToDoList>(toDoListReducer,
-                  change: (ToDoList state, Action action) {
+                  change: (ToDoList state, FAction action) {
                 track.append('page-onReduce', state.clone());
               }),
               effect: instrumentEffect<ToDoList>(toDoListEffect,
-                  (Action action, Get<ToDoList> getState) {
+                  (FAction action, Get<ToDoList> getState) {
                 if (action.type == ToDoListAction.onAdd) {
                   track.append('page-onAdd', getState().clone());
                 }
@@ -284,11 +284,11 @@ void main() {
                 track.append('page-build', state.clone());
               }),
               reducer: instrumentReducer<ToDoList>(toDoListReducer,
-                  change: (ToDoList state, Action action) {
+                  change: (ToDoList state, FAction action) {
                 track.append('page-onReduce', state.clone());
               }),
               effect: instrumentEffect<ToDoList>(toDoListEffect,
-                  (Action action, Get<ToDoList> getState) {
+                  (FAction action, Get<ToDoList> getState) {
                 if (action.type == ToDoListAction.onAdd) {
                   track.append('page-onAdd', getState().clone());
                 }
@@ -366,11 +366,11 @@ void main() {
                 track.append('page-build', state.clone());
               }),
               reducer: instrumentReducer<ToDoList>(toDoListReducer,
-                  change: (ToDoList state, Action action) {
+                  change: (ToDoList state, FAction action) {
                 track.append('page-onReduce', state.clone());
               }),
               effect: instrumentEffect<ToDoList>(toDoListEffect,
-                  (Action action, Get<ToDoList> getState) {
+                  (FAction action, Get<ToDoList> getState) {
                 if (action.type == ToDoListAction.onAdd) {
                   track.append('page-onAdd', getState().clone());
                 } else if (action.type == ToDoAction.broadcast) {

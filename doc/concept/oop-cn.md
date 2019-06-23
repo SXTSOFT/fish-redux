@@ -20,7 +20,7 @@ class MessageView extends ViewPart<MessageState> {
             viewService.buildComponent('profile'),
             InkWell(
                 child: Text('$message'),
-                onTap: () => dispatch(const Action('onShare')),
+                onTap: () => dispatch(const FAction('onShare')),
             ),
         ]);
     }
@@ -37,14 +37,14 @@ class MessageEffect extends EffectPart<MessageState> {
         };
     }
 
-    void _initState(Action action) {
+    void _initState(FAction action) {
         //do something on initState
     }
 
-    void _onShare(Action action) async {
+    void _onShare(FAction action) async {
         //do something on onShare
         await Future<void>.delayed(Duration(milliseconds: 1000));
-        dispatch(const Action('shared'));
+        dispatch(const FAction('shared'));
     }
 }
 

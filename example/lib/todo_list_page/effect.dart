@@ -14,7 +14,7 @@ Effect<PageState> buildEffect() {
   });
 }
 
-void _init(Action action, Context<PageState> ctx) {
+void _init(FAction action, Context<PageState> ctx) {
   final List<ToDoState> initToDos = <ToDoState>[
     ToDoState(
       uniqueId: '0',
@@ -39,7 +39,7 @@ void _init(Action action, Context<PageState> ctx) {
   ctx.dispatch(PageActionCreator.initToDosAction(initToDos));
 }
 
-void _onAdd(Action action, Context<PageState> ctx) {
+void _onAdd(FAction action, Context<PageState> ctx) {
   Navigator.of(ctx.context)
       .push<ToDoState>(MaterialPageRoute<ToDoState>(
           builder: (BuildContext buildCtx) =>

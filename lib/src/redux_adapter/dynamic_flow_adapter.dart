@@ -115,7 +115,7 @@ Reducer<T> _dynamicReducer<T>(
   Connector<T, List<ItemBean>> connector,
 ) {
   final Reducer<List<ItemBean>> dyReducer =
-      (List<ItemBean> state, Action action) {
+      (List<ItemBean> state, FAction action) {
     List<ItemBean> copy;
     for (int i = 0; i < state.length; i++) {
       final ItemBean itemBean = state[i];

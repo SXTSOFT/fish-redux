@@ -36,7 +36,7 @@ class ToDoList {
   }
 }
 
-ToDoList toDoReducer(ToDoList state, Action action) {
+ToDoList toDoReducer(ToDoList state, FAction action) {
   final ToDoList newState = ToDoList.copy(state);
 
   if (action.type == ToDoAction.add) {
@@ -53,7 +53,7 @@ ToDoList toDoReducer(ToDoList state, Action action) {
   return newState;
 }
 
-ToDoList defaultReducer(ToDoList state, Action action) => ToDoList.copy(state);
+ToDoList defaultReducer(ToDoList state, FAction action) => ToDoList.copy(state);
 
 void main() {
   group('store', () {
@@ -82,7 +82,7 @@ void main() {
       final Track track = Track();
       final Store<ToDoList> store = createStore<ToDoList>(
           ToDoList(),
-          instrumentReducer(toDoReducer, pre: (ToDoList state, Action action) {
+          instrumentReducer(toDoReducer, pre: (ToDoList state, FAction action) {
             if (action.type == ToDoAction.add) {
               track.append('onReduce_Add');
             } else if (action.type == ToDoAction.done) {
@@ -97,7 +97,7 @@ void main() {
       expect(store.getState().list, isEmpty);
 
       track.append('dispatch_Add');
-      store.dispatch(Action(ToDoAction.add,
+      store.dispatch(FAction(ToDoAction.add,
           payload: ToDo()
             ..id = 'unique'
             ..title = 'test'
@@ -113,7 +113,7 @@ void main() {
       expect(store.getState().list.first.isDone, isFalse);
 
       track.append('dispatch_Done');
-      store.dispatch(const Action(ToDoAction.done, payload: 'unique'));
+      store.dispatch(const FAction(ToDoAction.done, payload: 'unique'));
 
       expect(store.getState(), isNotNull);
       expect(store.getState().list, isNotNull);
@@ -125,7 +125,7 @@ void main() {
       expect(store.getState().list.first.isDone, isTrue);
 
       track.append('dispatch_Remove');
-      store.dispatch(const Action(ToDoAction.remove, payload: 'unique'));
+      store.dispatch(const FAction(ToDoAction.remove, payload: 'unique'));
 
       expect(store.getState(), isNotNull);
       expect(store.getState().list, isNotNull);
@@ -148,7 +148,7 @@ void main() {
 
       final Store<ToDoList> store = createStore<ToDoList>(
           ToDoList(),
-          instrumentReducer(toDoReducer, pre: (ToDoList state, Action action) {
+          instrumentReducer(toDoReducer, pre: (ToDoList state, FAction action) {
             if (action.type == ToDoAction.add) {
               track.append('onReduce_Add');
             } else if (action.type == ToDoAction.done) {
@@ -171,7 +171,7 @@ void main() {
       expect(firstToDo, isNull);
 
       track.append('dispatch_Add');
-      store.dispatch(Action(ToDoAction.add,
+      store.dispatch(FAction(ToDoAction.add,
           payload: ToDo()
             ..id = 'unique'
             ..title = 'test'
@@ -184,7 +184,7 @@ void main() {
       expect(firstToDo.isDone, isFalse);
 
       track.append('dispatch_Done');
-      store.dispatch(const Action(ToDoAction.done, payload: 'unique'));
+      store.dispatch(const FAction(ToDoAction.done, payload: 'unique'));
 
       expect(firstToDo, isNotNull);
       expect(firstToDo.id, 'unique');
@@ -193,7 +193,7 @@ void main() {
       expect(firstToDo.isDone, isTrue);
 
       track.append('dispatch_Remove');
-      store.dispatch(const Action(ToDoAction.remove, payload: 'unique'));
+      store.dispatch(const FAction(ToDoAction.remove, payload: 'unique'));
 
       expect(firstToDo, isNull);
 
@@ -225,7 +225,7 @@ void main() {
 
       expect(firstToDo, isNull);
 
-      store.dispatch(Action(ToDoAction.add,
+      store.dispatch(FAction(ToDoAction.add,
           payload: ToDo()
             ..id = 'unique'
             ..title = 'test'
@@ -239,7 +239,7 @@ void main() {
 
       unsubscribe();
 
-      store.dispatch(const Action(ToDoAction.remove, payload: 'unique'));
+      store.dispatch(const FAction(ToDoAction.remove, payload: 'unique'));
 
       expect(firstToDo, isNotNull);
       expect(firstToDo.id, 'unique');
@@ -252,7 +252,7 @@ void main() {
       final Track track = Track();
       final Store<ToDoList> store = createStore<ToDoList>(
           ToDoList(),
-          instrumentReducer(toDoReducer, pre: (ToDoList state, Action action) {
+          instrumentReducer(toDoReducer, pre: (ToDoList state, FAction action) {
             if (action.type == ToDoAction.add) {
               track.append('onReduce_Add');
             } else if (action.type == ToDoAction.done) {
@@ -273,7 +273,7 @@ void main() {
       expect(firstToDo, isNull);
 
       track.append('dispatch_Add');
-      store.dispatch(Action(ToDoAction.add,
+      store.dispatch(FAction(ToDoAction.add,
           payload: ToDo()
             ..id = 'unique'
             ..title = 'test'
@@ -286,7 +286,7 @@ void main() {
       expect(firstToDo.isDone, isFalse);
 
       track.append('dispatch_Done');
-      store.dispatch(const Action(ToDoAction.done, payload: 'unique'));
+      store.dispatch(const FAction(ToDoAction.done, payload: 'unique'));
 
       expect(firstToDo, isNotNull);
       expect(firstToDo.id, 'unique');
@@ -295,7 +295,7 @@ void main() {
       expect(firstToDo.isDone, isTrue);
 
       track.append('dispatch_Remove');
-      store.dispatch(const Action(ToDoAction.remove, payload: 'unique'));
+      store.dispatch(const FAction(ToDoAction.remove, payload: 'unique'));
 
       expect(firstToDo, isNull);
       expect(
@@ -325,7 +325,7 @@ void main() {
 
       expect(firstToDo, isNull);
 
-      store.dispatch(Action(ToDoAction.add,
+      store.dispatch(FAction(ToDoAction.add,
           payload: ToDo()
             ..id = 'unique'
             ..title = 'test'
@@ -339,7 +339,7 @@ void main() {
 
       subscription.cancel();
 
-      store.dispatch(const Action(ToDoAction.remove, payload: 'unique'));
+      store.dispatch(const FAction(ToDoAction.remove, payload: 'unique'));
 
       expect(firstToDo, isNotNull);
       expect(firstToDo.id, 'unique');
@@ -356,7 +356,7 @@ void main() {
       expect(store.getState().list, isNotNull);
       expect(store.getState().list, isEmpty);
 
-      store.dispatch(Action(ToDoAction.add,
+      store.dispatch(FAction(ToDoAction.add,
           payload: ToDo()
             ..id = 'unique'
             ..title = 'test'
@@ -372,7 +372,7 @@ void main() {
       expect(store.getState().list.first.isDone, isFalse);
 
       store.replaceReducer(defaultReducer);
-      store.dispatch(const Action(ToDoAction.remove, payload: 'unique'));
+      store.dispatch(const FAction(ToDoAction.remove, payload: 'unique'));
 
       expect(store.getState(), isNotNull);
       expect(store.getState().list, isNotNull);
@@ -384,7 +384,7 @@ void main() {
       expect(store.getState().list.first.isDone, isFalse);
 
       store.replaceReducer(toDoReducer);
-      store.dispatch(const Action(ToDoAction.remove, payload: 'unique'));
+      store.dispatch(const FAction(ToDoAction.remove, payload: 'unique'));
 
       expect(store.getState(), isNotNull);
       expect(store.getState().list, isNotNull);
@@ -399,7 +399,7 @@ void main() {
 
       final Middleware<ToDoList> toDoMiddleware = (
               {Dispatch dispatch, Get<ToDoList> getState}) =>
-          (Dispatch next) => (Action action) {
+          (Dispatch next) => (FAction action) {
                 lastAction = action.type;
                 lastState = ToDoList.copy(getState());
                 next(action);
@@ -407,7 +407,7 @@ void main() {
 
       final Store<ToDoList> store = createStore<ToDoList>(
           ToDoList(),
-          instrumentReducer(toDoReducer, pre: (ToDoList state, Action action) {
+          instrumentReducer(toDoReducer, pre: (ToDoList state, FAction action) {
             if (action.type == ToDoAction.add) {
               track.append('onReduce_Add');
             } else if (action.type == ToDoAction.done) {
@@ -420,7 +420,7 @@ void main() {
           }),
           applyMiddleware(<Middleware<ToDoList>>[
             instrumentMiddleware(toDoMiddleware,
-                pre: (Action action, Get<ToDoList> getReducer) {
+                pre: (FAction action, Get<ToDoList> getReducer) {
               if (action.type == ToDoAction.add) {
                 track.append('onMiddleware_Add');
               } else if (action.type == ToDoAction.done) {
@@ -450,7 +450,7 @@ void main() {
       expect(lastState, isNull);
 
       track.append('dispatch_Add');
-      store.dispatch(Action(ToDoAction.add,
+      store.dispatch(FAction(ToDoAction.add,
           payload: ToDo()
             ..id = 'unique'
             ..title = 'test'
@@ -462,7 +462,7 @@ void main() {
       expect(lastState.list, isEmpty);
 
       track.append('dispatch_Done');
-      store.dispatch(const Action(ToDoAction.done, payload: 'unique'));
+      store.dispatch(const FAction(ToDoAction.done, payload: 'unique'));
 
       expect(lastAction, ToDoAction.done);
       expect(lastState, isNotNull);
@@ -475,7 +475,7 @@ void main() {
       expect(lastState.list.first.isDone, isTrue);
 
       track.append('dispatch_Remove');
-      store.dispatch(const Action(ToDoAction.remove, payload: 'unique'));
+      store.dispatch(const FAction(ToDoAction.remove, payload: 'unique'));
 
       expect(lastAction, ToDoAction.remove);
       expect(lastState, isNotNull);

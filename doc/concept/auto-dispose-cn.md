@@ -26,7 +26,7 @@ class ItemWidgetBindingObserver extends WidgetsBindingObserver
   }
 }
 
-void _init(Action action, Context<ItemPageContainerState> ctx) {
+void _init(FAction action, Context<ItemPageContainerState> ctx) {
     final ItemWidgetBindingObserver observer = ItemWidgetBindingObserver();
     observer.follow(ctx);
 }

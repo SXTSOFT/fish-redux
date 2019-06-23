@@ -2,7 +2,7 @@
 
 -   The Reducer is a context-independent pure function. It receives the following parameters
     -   T state
-    -   Action action
+    -   FAction action
 -   It mainly contains three aspects of information
     -   Receive an "intent" and make a state modification.
     -   If you want to modify the state, you need to create a new copy and modify it on the copy.
@@ -11,7 +11,7 @@
 
 ```dart
 /// one style of writing
-String messageReducer(String msg, Action action) {
+String messageReducer(String msg, FAction action) {
   if (action.type == 'shared') {
     return '$msg [shared]';
   }
@@ -35,7 +35,7 @@ Reducer<String> buildMessageReducer() {
   });
 }
 
-String _shared(String msg, Action action) {
+String _shared(String msg, FAction action) {
   return '$msg [shared]';
 }
 

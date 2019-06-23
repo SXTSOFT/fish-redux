@@ -1,7 +1,7 @@
 # Effect
 
 -   Effect is a function that handles all side effects. It receives the following parameters
-    -   Action action
+    -   FAction action
     -   Context context
         -   BuildContext context
         -   T state
@@ -10,7 +10,7 @@
 -   It mainly contains four aspects of information
     -   Receive "intent" from the View, including the corresponding lifecycle callback, and then make specific execution.
     -   Its processing may be an asynchronous function, the data may be changed in the process, so we should get the latest data through context.state.
-    -   If you want to modify the data, you should send an Action to the Reducer to handle. It is read-only for data and cannot be modified directly in a effect function.
+    -   If you want to modify the data, you should send an FAction to the Reducer to handle. It is read-only for data and cannot be modified directly in a effect function.
     -   If its return value is a non-null value, it will take precedence for itself and will not do the next step; otherwise it will broadcast to the Effect part of other components and sent the action to the Reducer.
 
 > Self-First-Broadcast。
@@ -20,14 +20,14 @@
 
 ```dart
 /// one style of writing
-FutureOr<Object> sideEffect(Action action, Context<String> ctx) async {
+FutureOr<Object> sideEffect(FAction action, Context<String> ctx) async {
   if (action.type == Lifecycle.initState) {
     //do something on initState
     return true;
   } else if (action.type == 'onShare') {
     //do something on onShare
     await Future<void>.delayed(Duration(milliseconds: 1000));
-    ctx.dispatch(const Action('shared'));
+    ctx.dispatch(const FAction('shared'));
     return true;
   }
   return null;
@@ -50,14 +50,14 @@ Effect<String> buildEffect() {
   });
 }
 
-void _initState(Action action, Context<String> ctx) {
+void _initState(FAction action, Context<String> ctx) {
   //do something on initState
 }
 
-void _onShare(Action action, Context<String> ctx) async {
+void _onShare(FAction action, Context<String> ctx) async {
   //do something on onShare
   await Future<void>.delayed(Duration(milliseconds: 1000));
-  ctx.dispatch(const Action('shared'));
+  ctx.dispatch(const FAction('shared'));
 }
 
 class MessageComponent extends Component<String> {

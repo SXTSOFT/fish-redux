@@ -58,7 +58,7 @@ class AppProvider extends InheritedWidget {
     }
   }
 
-  static void appBroadcast(BuildContext context, Action action) {
+  static void appBroadcast(BuildContext context, FAction action) {
     final AppProvider provider = context.inheritFromWidgetOfExactType(
       AppProvider,
     );

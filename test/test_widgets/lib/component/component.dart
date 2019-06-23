@@ -29,7 +29,7 @@ Widget toDoView(ToDo toDo, Dispatch dispatch, ViewService viewService) {
                 onTap: () {
                   print('dispatch remove');
                   dispatch(
-                      Action(ToDoListAction.remove, payload: toDo.clone()));
+                      FAction(ToDoListAction.remove, payload: toDo.clone()));
                 },
               ),
               GestureDetector(
@@ -43,7 +43,7 @@ Widget toDoView(ToDo toDo, Dispatch dispatch, ViewService viewService) {
                 ),
                 onTap: () {
                   print('dispatch onEdit');
-                  dispatch(Action(ToDoAction.onEdit, payload: toDo.clone()));
+                  dispatch(FAction(ToDoAction.onEdit, payload: toDo.clone()));
                 },
               )
             ],
@@ -61,12 +61,12 @@ Widget toDoView(ToDo toDo, Dispatch dispatch, ViewService viewService) {
           onTap: () {
             if (!toDo.isDone) {
               print('dispatch markDone');
-              dispatch(Action(ToDoAction.markDone, payload: toDo.clone()));
+              dispatch(FAction(ToDoAction.markDone, payload: toDo.clone()));
             }
           },
           onLongPress: () {
             print('dispatch broadcast');
-            dispatch(Action(ToDoAction.onBroadcast));
+            dispatch(FAction(ToDoAction.onBroadcast));
           },
         )
       ],
@@ -74,17 +74,17 @@ Widget toDoView(ToDo toDo, Dispatch dispatch, ViewService viewService) {
   );
 }
 
-bool toDoEffect(Action action, Context<ToDo> ctx) {
+bool toDoEffect(FAction action, Context<ToDo> ctx) {
   if (action.type == ToDoAction.onEdit) {
     print('onEdit');
 
     ToDo toDo = ctx.state.clone();
     toDo.desc = '${toDo.desc}-effect';
 
-    ctx.dispatch(Action(ToDoAction.edit, payload: toDo));
+    ctx.dispatch(FAction(ToDoAction.edit, payload: toDo));
     return true;
   } else if (action.type == ToDoAction.onBroadcast) {
-    ctx.pageBroadcast(Action(ToDoAction.broadcast));
+    ctx.pageBroadcast(FAction(ToDoAction.broadcast));
     return true;
   } else if (action.type == Lifecycle.initState) {
     print('!!! initState ${ctx.state}');
@@ -97,7 +97,7 @@ bool toDoEffect(Action action, Context<ToDo> ctx) {
   return false;
 }
 
-dynamic toDoEffectAsync(Action action, Context<ToDo> ctx) {
+dynamic toDoEffectAsync(FAction action, Context<ToDo> ctx) {
   if (action.type == ToDoAction.onEdit) {
     return Future.delayed(Duration(seconds: 1), () => toDoEffect(action, ctx));
   }
@@ -106,9 +106,9 @@ dynamic toDoEffectAsync(Action action, Context<ToDo> ctx) {
 }
 
 OnAction toDoHigherEffect(Context<ToDo> ctx) =>
-    (Action action) => toDoEffect(action, ctx);
+    (FAction action) => toDoEffect(action, ctx);
 
-ToDo toDoReducer(ToDo state, Action action) {
+ToDo toDoReducer(ToDo state, FAction action) {
   if (!(action.payload is ToDo) || state.id != action.payload.id) return state;
 
   print('onReduce:${action.type}');
@@ -124,7 +124,7 @@ ToDo toDoReducer(ToDo state, Action action) {
 
 bool shouldUpdate(ToDo old, ToDo now) => old != now;
 
-bool reducerFilter(ToDo toDo, Action action) {
+bool reducerFilter(ToDo toDo, FAction action) {
   return action.type == ToDoAction.edit || action.type == ToDoAction.markDone;
 }
 

@@ -37,11 +37,11 @@ InitState<T, P> instrumentInitState<T extends Cloneable<T>, P>(
       return state;
     };
 
-typedef ReducerInstrument<T> = void Function(T state, Action action);
+typedef ReducerInstrument<T> = void Function(T state, FAction action);
 
 Reducer<T> instrumentReducer<T>(Reducer<T> reducer,
         {ReducerInstrument<T> pre, ReducerInstrument<T> suf,ReducerInstrument<T> change}) =>
-    (T state, Action action) {
+    (T state, FAction action) {
       T newState = state;
       if (pre != null) {
         pre(state, action);
@@ -60,17 +60,17 @@ Reducer<T> instrumentReducer<T>(Reducer<T> reducer,
       return newState;
     };
 
-typedef EffectInstrument<T> = void Function(Action action, Get<T> getState);
+typedef EffectInstrument<T> = void Function(FAction action, Get<T> getState);
 
 Effect<T> instrumentEffect<T>(Effect<T> effect, EffectInstrument<T> pre) =>
-    (Action action, Context<T> ctx) {
+    (FAction action, Context<T> ctx) {
       if (pre != null) {
         pre(action, () => ctx.state);
       }
       return effect(action, ctx);
     };
 
-typedef MiddlewareInstrument<T> = void Function(Action action, Get<T> getState);
+typedef MiddlewareInstrument<T> = void Function(FAction action, Get<T> getState);
 
 Middleware<T> instrumentMiddleware<T>(Middleware<T> middleware,
         {EffectInstrument<T> pre, EffectInstrument<T> suf}) =>
@@ -79,7 +79,7 @@ Middleware<T> instrumentMiddleware<T>(Middleware<T> middleware,
       Get<T> getState,
     }) {
       return (Dispatch next) {
-        return (Action action) {
+        return (FAction action) {
           if (pre != null) {
             pre(action, getState);
           }

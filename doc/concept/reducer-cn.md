@@ -2,7 +2,7 @@
 
 -   Reducer 是一个上下文无关的 pure function。它接收下面的参数
     -   T state
-    -   Action action
+    -   FAction action
 -   它主要包含三方面的信息
     -   接收一个“意图”， 做出数据修改。
     -   如果要修改数据，需要创建一份新的拷贝，修改在拷贝上。
@@ -11,7 +11,7 @@
 
 ```dart
 /// one style of writing
-String messageReducer(String msg, Action action) {
+String messageReducer(String msg, FAction action) {
   if (action.type == 'shared') {
     return '$msg [shared]';
   }
@@ -35,7 +35,7 @@ Reducer<String> buildMessageReducer() {
   });
 }
 
-String _shared(String msg, Action action) {
+String _shared(String msg, FAction action) {
   return '$msg [shared]';
 }
 

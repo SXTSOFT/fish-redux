@@ -3,7 +3,7 @@ import 'dart:async';
 /// This document describes the core concepts under the Redux system and their standard definitions.
 /// Mainly includes:
 /// 1. The concepts of ReduxJs community
-///    Action          ---- Definition of intention by plain object
+///    FAction          ---- Definition of intention by plain object
 ///    Reducer<T>      ---- How to modify the data by a pure function
 ///    Dispatch        ---- Expression of intention
 ///    Middleware<T>   ---- AOP
@@ -16,13 +16,13 @@ import 'dart:async';
 ///    a. It is obvious that the implementation of combineReducers are decoupled with the grammatical features of JS
 ///    b. The deeper is the contradiction between the centralization of Redux and the division of components can be solved.
 
-/// Action is a way of defining "intention".
+/// FAction is a way of defining "intention".
 ///     1. It emphasizes the clarity of an intention, not the implementation of the intent.
 ///     2. Usually the implementation of the intent is done by Effect or Reducer.
 ///     3. type: indicates the type of intent; payload: the original information loaded with the intent.
-///     4. Action definitions and standards, strictly follow the definition and standards of Action in the Redux community.
-class Action {
-  const Action(this.type, {this.payload});
+///     4. FAction definitions and standards, strictly follow the definition and standards of FAction in the Redux community.
+class FAction {
+  const FAction(this.type, {this.payload});
   final Object type;
   final dynamic payload;
 }
@@ -31,12 +31,12 @@ class Action {
 enum ActionType { unknown, init, replace, destroy }
 
 /// Definition of the standard Reducer.
-/// If the Reducer needs to respond to the Action, it returns a new state, otherwise it returns the old state.
-typedef Reducer<T> = T Function(T state, Action action);
+/// If the Reducer needs to respond to the FAction, it returns a new state, otherwise it returns the old state.
+typedef Reducer<T> = T Function(T state, FAction action);
 
 /// Definition of the standard Dispatch.
 /// Send an "intention".
-typedef Dispatch = void Function(Action action);
+typedef Dispatch = void Function(FAction action);
 
 /// Definition of a standard subscription function.
 /// input a subscriber and output an anti-subscription function.
@@ -81,7 +81,7 @@ typedef StoreEnhancer<T> = StoreCreator<T> Function(StoreCreator<T> creator);
 /// Definition of SubReducer
 /// [isStateCopied] is Used to optimize execution performance.
 /// Ensure that a T will be cloned at most once during the entire process.
-typedef SubReducer<T> = T Function(T state, Action action, bool isStateCopied);
+typedef SubReducer<T> = T Function(T state, FAction action, bool isStateCopied);
 
 /// Definition of Cloneable
 abstract class Cloneable<T extends Cloneable<T>> {

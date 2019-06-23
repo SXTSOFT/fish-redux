@@ -32,7 +32,7 @@ Widget toDoView(
                 ),
                 onTap: () {
                   print('dispatch remove');
-                  dispatch(Action(ToDoListAction.remove, payload: toDo));
+                  dispatch(FAction(ToDoListAction.remove, payload: toDo));
                 },
               ),
               GestureDetector(
@@ -46,7 +46,7 @@ Widget toDoView(
                 ),
                 onTap: () {
                   print('dispatch onEdit');
-                  dispatch(Action(ToDoListAction.onEdit, payload: toDo));
+                  dispatch(FAction(ToDoListAction.onEdit, payload: toDo));
                 },
               )
             ],
@@ -64,22 +64,22 @@ Widget toDoView(
             onTap: () {
               if (!toDo.isDone) {
                 print('dispatch markDone');
-                dispatch(Action(ToDoListAction.markDone, payload: toDo));
+                dispatch(FAction(ToDoListAction.markDone, payload: toDo));
               }
             },
             onLongPress: () {
               print('dispatch Add');
-              dispatch(Action(ToDoListAction.onAdd, payload: toDo));
+              dispatch(FAction(ToDoListAction.onAdd, payload: toDo));
             })
       ],
     ),
   );
 }
 
-bool toDoListEffect(Action action, Context<ToDoList> ctx) {
+bool toDoListEffect(FAction action, Context<ToDoList> ctx) {
   if (action.type == ToDoListAction.onAdd) {
     print('onAdd');
-    ctx.dispatch(Action(ToDoListAction.add, payload: ToDo.mock()));
+    ctx.dispatch(FAction(ToDoListAction.add, payload: ToDo.mock()));
 
     return true;
   } else if (action.type == ToDoListAction.onEdit) {
@@ -90,14 +90,14 @@ bool toDoListEffect(Action action, Context<ToDoList> ctx) {
         .firstWhere((i) => i.id == action.payload.id, orElse: () => null)
         .clone();
     toDo.desc = '${toDo.desc}-effect';
-    ctx.dispatch(Action(ToDoListAction.edit, payload: toDo));
+    ctx.dispatch(FAction(ToDoListAction.edit, payload: toDo));
     return true;
   }
 
   return false;
 }
 
-dynamic toDoListEffectAsync(Action action, Context<ToDoList> ctx) {
+dynamic toDoListEffectAsync(FAction action, Context<ToDoList> ctx) {
   if (action.type == ToDoListAction.onAdd ||
       action.type == ToDoListAction.onEdit ||
       action.type == ToDoListAction.onKnowException ||
@@ -110,9 +110,9 @@ dynamic toDoListEffectAsync(Action action, Context<ToDoList> ctx) {
 }
 
 OnAction toDoListHigherEffect(Context<ToDoList> ctx) =>
-    (Action action) => toDoListEffect(action, ctx);
+    (FAction action) => toDoListEffect(action, ctx);
 
-ToDoList toDoListReducer(ToDoList state, Action action) {
+ToDoList toDoListReducer(ToDoList state, FAction action) {
   print('onReduce:${action.type}');
   if (!(action.payload is ToDo)) return state;
 

@@ -1,7 +1,7 @@
 -   **[简介](introduction/README-cn.md)**
 -   **核心概念**
     -   [Redux](concept/redux-cn.md)
-        -   [Action](concept/action-cn.md)
+        -   [FAction](concept/action-cn.md)
         -   [Connector](concept/connector-cn.md)
         -   [Reducer](concept/reducer-cn.md)
         -   [Middleware](concept/middleware-cn.md)

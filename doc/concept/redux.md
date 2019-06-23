@@ -1,7 +1,7 @@
 ### Redux
 
 -   State
--   [Action](action.md)
+-   [FAction](action.md)
 -   [Reducer](reducer.md)
 -   Store
 -   [Middleware](middleware.md)

@@ -319,7 +319,7 @@ abstract class Page<T extends Cloneable<T>, P> extends Component<T> {
   static Middleware<T> interrupt$<T>() {
     return ({Dispatch dispatch, Get<T> getState}) {
       return (Dispatch next) {
-        return (Action action) {
+        return (FAction action) {
           if (!shouldBeInterrupttedBeforeReducer(action)) {
             next(action);
           }

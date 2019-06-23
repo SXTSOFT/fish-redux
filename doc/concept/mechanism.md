@@ -8,7 +8,7 @@
 ![image.png | left | 747x399](https://cdn.nlark.com/lark/0/2018/png/82574/1545365233153-4c8105b4-050c-49e6-be02-dbf28a861caa.png)
 
 Self-First-Broadcast。
-The emitted Action will be processed first by its own Effect, otherwise it will be broadcast to other components and Redux.
+The emitted FAction will be processed first by its own Effect, otherwise it will be broadcast to other components and Redux.
 
 We completed the communication between the components (parent to child, child to parent, brother, etc.) through a simple and intuitive dispatch.
 

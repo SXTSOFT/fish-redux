@@ -4,23 +4,23 @@ import 'state.dart';
 enum ToDoAction { onEdit, edit, done, onRemove, remove }
 
 class ToDoActionCreator {
-  static Action onEditAction(String uniqueId) {
-    return Action(ToDoAction.onEdit, payload: uniqueId);
+  static FAction onEditAction(String uniqueId) {
+    return FAction(ToDoAction.onEdit, payload: uniqueId);
   }
 
-  static Action editAction(ToDoState toDo) {
-    return Action(ToDoAction.edit, payload: toDo);
+  static FAction editAction(ToDoState toDo) {
+    return FAction(ToDoAction.edit, payload: toDo);
   }
 
-  static Action doneAction(String uniqueId) {
-    return Action(ToDoAction.done, payload: uniqueId);
+  static FAction doneAction(String uniqueId) {
+    return FAction(ToDoAction.done, payload: uniqueId);
   }
 
-  static Action onRemoveAction(String uniqueId) {
-    return Action(ToDoAction.onRemove, payload: uniqueId);
+  static FAction onRemoveAction(String uniqueId) {
+    return FAction(ToDoAction.onRemove, payload: uniqueId);
   }
 
-  static Action removeAction(String uniqueId) {
-    return Action(ToDoAction.remove, payload: uniqueId);
+  static FAction removeAction(String uniqueId) {
+    return FAction(ToDoAction.remove, payload: uniqueId);
   }
 }

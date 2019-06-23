@@ -18,7 +18,7 @@ dynamic _clone<T>(T state) {
 
 /// Connector<T, P> + Reducer<P> => SubReducer<T>
 SubReducer<T> subReducer<T, P>(Connector<T, P> connector, Reducer<P> reducer) {
-  return (T state, Action action, bool isStateCopied) {
+  return (T state, FAction action, bool isStateCopied) {
     final P props = connector.get(state);
     if (props == null) {
       return state;
@@ -45,10 +45,10 @@ Reducer<T> combineSubReducers<T>(Iterable<SubReducer<T>> subReducers) {
 
   if (notNullReducers.length == 1) {
     final SubReducer<T> single = notNullReducers.single;
-    return (T state, Action action) => single(state, action, false);
+    return (T state, FAction action) => single(state, action, false);
   }
 
-  return (T state, Action action) {
+  return (T state, FAction action) {
     T copy = state;
     bool hasChanged = false;
     for (SubReducer<T> subReducer in notNullReducers) {
@@ -72,7 +72,7 @@ Reducer<T> combineReducers<T>(Iterable<Reducer<T>> reducers) {
     return notNullReducers.single;
   }
 
-  return (T state, Action action) {
+  return (T state, FAction action) {
     T nextState = state;
     for (Reducer<T> reducer in notNullReducers) {
       nextState = reducer(nextState, action);
@@ -86,7 +86,7 @@ Reducer<T> combineReducers<T>(Iterable<Reducer<T>> reducers) {
 Reducer<Sub> castReducer<Sub extends Sup, Sup>(Reducer<Sup> sup) {
   return sup == null
       ? null
-      : (Sub state, Action action) {
+      : (Sub state, FAction action) {
           final Sub result = sup(state, action);
           return result;
         };

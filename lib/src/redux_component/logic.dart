@@ -57,7 +57,7 @@ class Logic<T> implements AbstractLogic<T> {
       filter);
 
   @override
-  Object onReducer(Object state, Action action) =>
+  Object onReducer(Object state, FAction action) =>
       cache<Reducer<T>>('onReducer', () => reducer)?.call(state, action) ??
       state;
 
@@ -65,7 +65,7 @@ class Logic<T> implements AbstractLogic<T> {
   OnAction createHandlerOnAction(Context<T> ctx) {
     final OnAction onEffect = higherEffect?.call(ctx);
     return onEffect != null
-        ? (Action action) {
+        ? (FAction action) {
             assert(action != null, 'Do not dispatch an action of null.');
             try {
               final Object result = onEffect(action);
@@ -97,14 +97,14 @@ class Logic<T> implements AbstractLogic<T> {
   @override
   Dispatch createDispatch(
       OnAction onAction, Context<T> ctx, Dispatch parentDispatch) {
-    Dispatch dispatch = (Action action) {
+    Dispatch dispatch = (FAction action) {
       throw Exception(
           'Dispatching while appending your effect & onError to dispatch is not allowed.');
     };
 
     /// attach to store.dispatch
     dispatch = _applyOnAction<T>(onAction, ctx)(
-      dispatch: (Action action) => dispatch(action),
+      dispatch: (FAction action) => dispatch(action),
       getState: () => ctx.state,
     )(parentDispatch);
     return dispatch;
@@ -142,7 +142,7 @@ class Logic<T> implements AbstractLogic<T> {
   static Middleware<T> _applyOnAction<T>(OnAction onAction, Context<T> ctx) {
     return ({Dispatch dispatch, Get<T> getState}) {
       return (Dispatch next) {
-        return (Action action) {
+        return (FAction action) {
           final Object result = onAction?.call(action);
           if (result != null && result != false) {
             return;

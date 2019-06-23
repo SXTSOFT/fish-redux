@@ -43,7 +43,7 @@ abstract class ViewUpdater<T> {
 /// A little different with Dispatch (with if it is interrupted).
 /// bool for sync-functions , interrupted if true
 /// Futur<void> for async-functions ,should always be interrupted,
-typedef OnAction = dynamic Function(Action action);
+typedef OnAction = dynamic Function(FAction action);
 
 /// Predicate if a component should be updated when the store is changed.
 typedef ShouldUpdate<T> = bool Function(T old, T now);
@@ -51,7 +51,7 @@ typedef ShouldUpdate<T> = bool Function(T old, T now);
 /// Interrupt if not null not false
 /// bool for sync-functions , interrupted if true
 /// Futur<void> for async-functions ,should always be interrupted,
-typedef Effect<T> = dynamic Function(Action action, Context<T> ctx);
+typedef Effect<T> = dynamic Function(FAction action, Context<T> ctx);
 
 /// Because Effect<T> is an aysnc-function, if it has some self-state, we should use HigherEffect<T>
 typedef HigherEffect<T> = OnAction Function(Context<T> ctx);
@@ -61,7 +61,7 @@ typedef OnError<T> = bool Function(Exception exception, Context<T> ctx);
 
 abstract class Broadcast {
   /// Broadcast in all receivers;
-  void sendBroadcast(Action action, {OnAction excluded});
+  void sendBroadcast(FAction action, {OnAction excluded});
 
   /// Register a receiver and return the unregister function
   void Function() registerReceiver(OnAction onAction);
@@ -82,10 +82,10 @@ abstract class ViewService {
   BuildContext get context;
 
   /// Broadcast action(the intent) in app (inter-pages)
-  void appBroadcast(Action action);
+  void appBroadcast(FAction action);
 
   /// Broadcast action(the intent) in page (inter-components)
-  void pageBroadcast(Action action, {bool excluedSelf});
+  void pageBroadcast(FAction action, {bool excluedSelf});
 }
 
 ///  Seen in effect-part
@@ -103,16 +103,16 @@ abstract class Context<T> extends AutoDispose {
   Map<String, Object> get extra;
 
   /// Broadcast action in app (inter-pages)
-  void appBroadcast(Action action);
+  void appBroadcast(FAction action);
 
   /// Broadcast action in page (inter-components)
-  void pageBroadcast(Action action, {bool excluedSelf});
+  void pageBroadcast(FAction action, {bool excluedSelf});
 }
 
 /// Seen in framework-component
 abstract class ContextSys<T> extends Context<T> implements ViewService {
   /// Response to lifecycle calls
-  void onLifecycle(Action action);
+  void onLifecycle(FAction action);
 }
 
 /// Representation of each dependency
@@ -148,7 +148,7 @@ abstract class AbstractLogic<T> {
   Reducer<T> get reducer;
 
   /// To solve Reducer<Object> is neither a subtype nor a supertype of Reducer<T> issue.
-  Object onReducer(Object state, Action action);
+  Object onReducer(Object state, FAction action);
 
   /// To create each instance's side-effect-action-handler
   OnAction createHandlerOnAction(Context<T> ctx);
@@ -194,4 +194,4 @@ abstract class AbstractAdapter<T> implements AbstractLogic<T> {
 
 /// Because a main reducer will be very complicated with multiple level's state.
 /// When a reducer is slow to handle an action, maybe we should use ReducerFilter to improve the performance.
-typedef ReducerFilter<T> = bool Function(T state, Action action);
+typedef ReducerFilter<T> = bool Function(T state, FAction action);

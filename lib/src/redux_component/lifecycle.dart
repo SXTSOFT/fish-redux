@@ -15,21 +15,21 @@ enum Lifecycle {
 }
 
 class LifecycleCreator {
-  static Action initState() => const Action(Lifecycle.initState);
+  static FAction initState() => const FAction(Lifecycle.initState);
 
-  static Action build() => const Action(Lifecycle.build);
+  static FAction build() => const FAction(Lifecycle.build);
 
-  static Action dispose() => const Action(Lifecycle.dispose);
+  static FAction dispose() => const FAction(Lifecycle.dispose);
 
-  static Action didUpdateWidget() => const Action(Lifecycle.didUpdateWidget);
+  static FAction didUpdateWidget() => const FAction(Lifecycle.didUpdateWidget);
 
-  static Action didChangeDependencies() =>
-      const Action(Lifecycle.didChangeDependencies);
+  static FAction didChangeDependencies() =>
+      const FAction(Lifecycle.didChangeDependencies);
 
-  static Action deactivate() => const Action(Lifecycle.deactivate);
+  static FAction deactivate() => const FAction(Lifecycle.deactivate);
 
-  static Action appear(int index) => Action(Lifecycle.appear, payload: index);
+  static FAction appear(int index) => FAction(Lifecycle.appear, payload: index);
 
-  static Action disappear(int index) =>
-      Action(Lifecycle.disappear, payload: index);
+  static FAction disappear(int index) =>
+      FAction(Lifecycle.disappear, payload: index);
 }

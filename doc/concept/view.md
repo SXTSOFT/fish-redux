@@ -22,7 +22,7 @@ Widget buildMessageView(String message, Dispatch dispatch, ViewService viewServi
     viewService.buildComponent('profile'),
     InkWell(
       child: Text('$message'),
-      onTap: () => dispatch(const Action('onShare')),
+      onTap: () => dispatch(const FAction('onShare')),
     ),
   ]);
 }

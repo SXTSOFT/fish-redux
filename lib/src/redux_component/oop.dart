@@ -24,7 +24,7 @@ class _BasePart<T> {
     return true;
   }
 
-  VoidCallback bindAction(Action action) => () => dispatch(action);
+  VoidCallback bindAction(FAction action) => () => dispatch(action);
 }
 
 @immutable
@@ -61,7 +61,7 @@ abstract class EffectPart<T> extends AutoDispose {
   BuildContext get context => _tuple.i0.context;
   Dispatch get dispatch => _tuple.i0.dispatch;
 
-  Object onAction(Action action) {
+  Object onAction(FAction action) {
     final OnAction onSubAction = _tuple.i1[action.type];
     if (onSubAction != null) {
       return onSubAction(action) ?? true;

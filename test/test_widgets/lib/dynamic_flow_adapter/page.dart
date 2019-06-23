@@ -31,11 +31,11 @@ Widget pageView(
             ),
             onTap: () {
               print('dispatch Add');
-              dispatch(Action(PageAction.onAdd));
+              dispatch(FAction(PageAction.onAdd));
             },
             onLongPress: () {
               print('dispatch broadcast');
-              viewService.pageBroadcast(const Action(ToDoAction.broadcast));
+              viewService.pageBroadcast(const FAction(ToDoAction.broadcast));
             },
           )),
         ],
@@ -73,10 +73,10 @@ const Map<String, dynamic> pageInitParams = <String, dynamic>{
   ]
 };
 
-bool pageEffect(Action action, Context<ToDoList> ctx) {
+bool pageEffect(FAction action, Context<ToDoList> ctx) {
   if (action.type == PageAction.onAdd) {
     print('page onAdd');
-    ctx.pageBroadcast(Action(ToDoListAction.onAdd, payload: ToDo.mock()));
+    ctx.pageBroadcast(FAction(ToDoListAction.onAdd, payload: ToDo.mock()));
     return true;
   }
 

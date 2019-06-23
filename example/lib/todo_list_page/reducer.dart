@@ -10,7 +10,7 @@ Reducer<PageState> buildReducer() {
   );
 }
 
-PageState _initToDosReducer(PageState state, Action action) {
+PageState _initToDosReducer(PageState state, FAction action) {
   final List<ToDoState> toDos = action.payload ?? <ToDoState>[];
   final PageState newState = state.clone();
   newState.toDos = toDos;

@@ -12,7 +12,7 @@ Effect<ToDoState> buildEffect() {
   });
 }
 
-void _onEdit(Action action, Context<ToDoState> ctx) {
+void _onEdit(FAction action, Context<ToDoState> ctx) {
   if (action.payload == ctx.state.uniqueId) {
     Navigator.of(ctx.context)
         .push<ToDoState>(MaterialPageRoute<ToDoState>(
@@ -26,7 +26,7 @@ void _onEdit(Action action, Context<ToDoState> ctx) {
   }
 }
 
-void _onRemove(Action action, Context<ToDoState> ctx) async {
+void _onRemove(FAction action, Context<ToDoState> ctx) async {
   final String select = await showDialog<String>(
       context: ctx.context,
       builder: (BuildContext buildContext) {
