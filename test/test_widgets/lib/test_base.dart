@@ -1,11 +1,12 @@
 import 'package:fish_redux/fish_redux.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Action;
 
+@immutable
 class TestStub extends StatefulWidget {
   final Widget testWidget;
   final String title;
 
-  TestStub(this.testWidget, {this.title = 'FlutterTest'});
+  const TestStub(this.testWidget, {this.title = 'FlutterTest'});
 
   @override
   _StubState createState() => _StubState();
@@ -25,7 +26,7 @@ class _StubState extends State<TestStub> {
 class TestPage<T extends Cloneable<T>, P> extends Page<T, P> {
   TestPage({
     @required InitState<T, P> initState,
-    List<Middleware<T>> middlewares,
+    List<Middleware<T>> middleware,
     @required ViewBuilder<T> view,
     Reducer<T> reducer,
     ReducerFilter<T> filter,
@@ -38,13 +39,12 @@ class TestPage<T extends Cloneable<T>, P> extends Page<T, P> {
     Key Function(T) key,
   }) : super(
           initState: initState,
-          middlewares: middlewares,
+          middleware: middleware,
           view: view,
           reducer: reducer,
           filter: filter,
           effect: effect,
           higherEffect: higherEffect,
-          onError: onError,
           dependencies: dependencies,
           shouldUpdate: shouldUpdate,
           wrapper: wrapper,
@@ -70,7 +70,6 @@ class TestComponent<T extends Cloneable<T>> extends Component<T> {
             filter: filter,
             effect: effect,
             higherEffect: higherEffect,
-            onError: onError,
             dependencies: dependencies,
             shouldUpdate: shouldUpdate,
             wrapper: wrapper,
@@ -91,7 +90,6 @@ class TestAdapter<T extends Cloneable<T>> extends Adapter<T> {
             reducer: reducer,
             effect: effect,
             higherEffect: higherEffect,
-            onError: onError,
             filter: filter,
             dependencies: dependencies);
 }
@@ -110,7 +108,6 @@ class TestStaticFlowAdapter<T extends Cloneable<T>>
             reducer: reducer,
             effect: effect,
             higherEffect: higherEffect,
-            onError: onError,
             filter: filter);
 }
 
@@ -130,6 +127,5 @@ class TestDynamicFlowAdapter<T extends Cloneable<T>>
             reducer: reducer,
             effect: effect,
             higherEffect: higherEffect,
-            onError: onError,
             filter: filter);
 }

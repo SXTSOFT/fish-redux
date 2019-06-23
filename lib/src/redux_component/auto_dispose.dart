@@ -14,8 +14,8 @@ class _Fields {
 class AutoDispose {
   final _Fields _fields = _Fields();
 
-  void visit(void Function(AutoDispose) visiter) =>
-      _fields.children?.forEach(visiter);
+  void visit(void Function(AutoDispose) visitor) =>
+      _fields.children?.forEach(visitor);
 
   bool get isDisposed => _fields.isDisposed;
 
@@ -73,19 +73,14 @@ class AutoDispose {
     _fields.parent = newParent;
   }
 
-  AutoDispose registerOnDisposed(void Function() onDisposed) {
-    return AutoDispose()
-      ..setParent(this)
-      ..onDisposed(onDisposed);
-  }
+  AutoDispose registerOnDisposed(void Function() onDisposed) => AutoDispose()
+    ..setParent(this)
+    ..onDisposed(onDisposed);
 
   @deprecated
-  void follow(AutoDispose newParent) {
-    return setParent(newParent);
-  }
+  void follow(AutoDispose newParent) => setParent(newParent);
 
   @deprecated
-  AutoDispose follower([void Function() onDisposed]) {
-    return registerOnDisposed(onDisposed);
-  }
+  AutoDispose follower([void Function() onDisposed]) =>
+      registerOnDisposed(onDisposed);
 }

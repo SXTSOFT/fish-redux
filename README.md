@@ -1,6 +1,7 @@
-# Fish Redux
+<p align="center"><img src="https://img.alicdn.com/tfs/TB1r74NJyLaK1RjSZFxXXamPFXa-1024-1024.png" align="center" width="175"></p>
+<h1 align="center">Fish Redux</h1>
 
-<img src="https://img.alicdn.com/tfs/TB1r74NJyLaK1RjSZFxXXamPFXa-1024-1024.png" width="128px" height="128px">
+[![Build Status](https://travis-ci.org/alibaba/fish-redux.svg?branch=master)](https://travis-ci.org/alibaba/fish-redux) [![pub package](https://img.shields.io/pub/v/fish_redux.svg)](https://pub.dartlang.org/packages/fish_redux) [![codecov](https://codecov.io/gh/alibaba/fish-redux/branch/master/graph/badge.svg)](https://codecov.io/gh/alibaba/fish-redux)
 
 ## What is Fish Redux ?
 
@@ -43,6 +44,17 @@ flutter run
 ## What's the difference between 'Fish Redux' and 'Redux' ?
 
 -   [answers](doc/concept/what's-the-diiference.md)
+
+## Plugins
+
+### Code Template
+
+-   [Fish Redux Template For Android Studio](https://github.com/BakerJQ/FishReduxTemplateForAS), by BakerJQ.
+-   [Fish Redux Template For VSCode](https://github.com/huangjianke/fish-redux-template), by huangjianke.
+
+### Dev-Tools
+
+-   Redux Inspector (using [Flutter Debugger](https://github.com/blankapp/flutter-debugger) and [flipperkit_fish_redux_middleware](https://pub.dartlang.org/packages/flipperkit_fish_redux_middleware)) for Fish Redux apps, by [JianyingLi](https://github.com/lijy91)
 
 ## License
 

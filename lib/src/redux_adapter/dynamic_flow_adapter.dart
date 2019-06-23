@@ -1,4 +1,4 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/widgets.dart' hide Action;
 
 import '../redux/redux.dart';
 import '../redux_component/logic.dart';
@@ -6,33 +6,21 @@ import '../redux_component/redux_component.dart';
 import '../utils/utils.dart';
 import 'recycle_context.dart';
 
-abstract class ItemBean implements Cloneable<ItemBean> {
-  String get type;
-  set type(String type);
-  Object get data;
-  set data(Object data);
-
-  factory ItemBean(String type, Object data) => _ItemBean(type, data);
-}
-
-class _ItemBean implements ItemBean {
-  @override
+class ItemBean {
   String type;
-  @override
   Object data;
 
-  _ItemBean(this.type, this.data);
+  ItemBean(this.type, this.data);
 
-  @override
-  _ItemBean clone() => _ItemBean(type, data);
+  ItemBean clone() => ItemBean(type, data);
 }
 
-/// template is a map, drived by array
+/// template is a map, driven by array
 class DynamicFlowAdapter<T> extends Logic<T>
     with RecycleContextMixin<T>
     implements AbstractAdapter<T> {
   final Map<String, AbstractLogic<Object>> pool;
-  final Connector<T, List<ItemBean>> connector;
+  final AbstractConnector<T, List<ItemBean>> connector;
 
   DynamicFlowAdapter({
     @required this.pool,
@@ -41,13 +29,11 @@ class DynamicFlowAdapter<T> extends Logic<T>
     Reducer<T> reducer,
     Effect<T> effect,
     HigherEffect<T> higherEffect,
-    OnError<T> onError,
     Object Function(T) key,
   }) : super(
           reducer: _dynamicReducer(reducer, pool, connector),
           effect: effect,
           higherEffect: higherEffect,
-          onError: onError,
           filter: filter,
           dependencies: null,
           key: key,
@@ -83,7 +69,7 @@ class DynamicFlowAdapter<T> extends Logic<T>
             () {
               return result.createContext(
                 store: ctx.store,
-                getBuildContext: ctx.getBuildContext,
+                buildContext: ctx.context,
                 getState: _subGetter(() => connector.get(ctx.state), index),
               );
             },
@@ -109,10 +95,11 @@ class DynamicFlowAdapter<T> extends Logic<T>
   }
 }
 
+/// Generate reducer for List<ItemBean> and combine them into one
 Reducer<T> _dynamicReducer<T>(
   Reducer<T> reducer,
   Map<String, AbstractLogic<Object>> pool,
-  Connector<T, List<ItemBean>> connector,
+  AbstractConnector<T, List<ItemBean>> connector,
 ) {
   final Reducer<List<ItemBean>> dyReducer =
       (List<ItemBean> state, Action action) {
@@ -133,10 +120,16 @@ Reducer<T> _dynamicReducer<T>(
 
   return combineReducers(<Reducer<T>>[
     reducer,
-    combineSubReducers(<SubReducer<T>>[subReducer(connector, dyReducer)]),
+    combineSubReducers(<SubReducer<T>>[connector.subReducer(dyReducer)]),
   ]);
 }
 
+/// Define itemBean how to get state with connector
+///
+/// [_isSimilar] return true just use newState after reducer safely
+/// [_isSimilar] return false we should use cache state before reducer invoke.
+/// for reducer change state immediately but sub component will refresh on next
+/// frame. in this time the sub component will use cache state.
 Get<Object> _subGetter(Get<List<ItemBean>> getter, int index) {
   final List<ItemBean> curState = getter();
   final Object subCache = curState[index].data;
@@ -152,6 +145,10 @@ Get<Object> _subGetter(Get<List<ItemBean>> getter, int index) {
   };
 }
 
+/// Judge [oldList] and [newList] is similar
+///
+/// if true: means the list size and every itemBean type & data.runtimeType
+/// is equal.
 bool _isSimilar(
   List<ItemBean> oldList,
   List<ItemBean> newList,

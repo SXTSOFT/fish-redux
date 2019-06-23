@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import '../utils/hash.dart';
+
 /// This document describes the core concepts under the Redux system and their standard definitions.
 /// Mainly includes:
 /// 1. The concepts of ReduxJs community
@@ -10,7 +12,6 @@ import 'dart:async';
 ///    Store<T>        ---- State management center
 /// 2. Additional abstractions beyond the basic concepts of the ReduxJs community.
 ///    Connector<S, P> ---- The connection between big object <T> and small object <P>
-///    Cloneable       ---- Clone an object
 ///    SubReducer<T>   ---- A function that modifies data of partial <T>
 ///    The role of this layer of abstraction
 ///    a. It is obvious that the implementation of combineReducers are decoupled with the grammatical features of JS
@@ -25,10 +26,14 @@ class Action {
   const Action(this.type, {this.payload});
   final Object type;
   final dynamic payload;
-}
 
-/// Store internal intent type definition.
-enum ActionType { unknown, init, replace, destroy }
+  @override
+  bool operator ==(Object other) =>
+      other is Action && other.type == type && other.payload == payload;
+
+  @override
+  int get hashCode => hash(<int>[type.hashCode, payload.hashCode]);
+}
 
 /// Definition of the standard Reducer.
 /// If the Reducer needs to respond to the Action, it returns a new state, otherwise it returns the old state.
@@ -36,7 +41,7 @@ typedef Reducer<T> = T Function(T state, Action action);
 
 /// Definition of the standard Dispatch.
 /// Send an "intention".
-typedef Dispatch = void Function(Action action);
+typedef Dispatch = dynamic Function(Action action);
 
 /// Definition of a standard subscription function.
 /// input a subscriber and output an anti-subscription function.
@@ -49,13 +54,13 @@ typedef ReplaceReducer<T> = void Function(Reducer<T> reducer);
 typedef Observable<T> = Stream<T> Function();
 
 /// Definition of synthesizable functions.
-typedef Composeable<T> = T Function(T next);
+typedef Composable<T> = T Function(T next);
 
 /// Definition of the function type that returns type R.
 typedef Get<R> = R Function();
 
 /// Definition of the standard Middleware.
-typedef Middleware<T> = Composeable<Dispatch> Function({
+typedef Middleware<T> = Composable<Dispatch> Function({
   Dispatch dispatch,
   Get<T> getState,
 });
@@ -67,6 +72,7 @@ class Store<T> {
   Subscribe subscribe;
   Observable<T> observable;
   ReplaceReducer<T> replaceReducer;
+  Future<dynamic> Function() teardown;
 }
 
 /// Create a store definition
@@ -83,29 +89,22 @@ typedef StoreEnhancer<T> = StoreCreator<T> Function(StoreCreator<T> creator);
 /// Ensure that a T will be cloned at most once during the entire process.
 typedef SubReducer<T> = T Function(T state, Action action, bool isStateCopied);
 
-/// Definition of Cloneable
-abstract class Cloneable<T extends Cloneable<T>> {
-  T clone();
-}
-
-/// Definition of Connector
-/// 1. How to get an object of type P from an object of type S.
-/// 2. How to synchronize change of an object of type P to an object of type S.
-abstract class Connector<S, P> {
-  factory Connector({P Function(S) get, void Function(S, P) set}) =>
-      _Connector<S, P>(get, set);
-
+/// Definition of Connector which connects Reducer<S> with Reducer<P>.
+/// 1. How to get an instance of type P from an instance of type S.
+/// 2. How to synchronize changes of an instance of type P to an instance of type S.
+/// 3. How to clone a new S.
+abstract class AbstractConnector<S, P> {
   P get(S state);
-  void set(S state, P substate);
-}
 
-/// An implementation of the default Connector<S, P>
-class _Connector<S, P> implements Connector<S, P> {
-  final P Function(S) getter;
-  final void Function(S, P) setter;
-  const _Connector(this.getter, this.setter);
-  @override
-  P get(S state) => getter(state);
-  @override
-  void set(S state, P substate) => setter(state, substate);
+  /// For mutable state, there are three abilities needed to be met.
+  ///     1. get: (S) => P
+  ///     2. set: (S, P) => void
+  ///     3. shallow copy: s.clone()
+  ///
+  /// For immutable state, there are two abilities needed to be met.
+  ///     1. get: (S) => P
+  ///     2. set: (S, P) => S
+  ///
+  /// See in [connector].
+  SubReducer<S> subReducer(Reducer<P> reducer);
 }

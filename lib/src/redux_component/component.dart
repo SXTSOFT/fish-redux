@@ -1,54 +1,53 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/widgets.dart' hide Action;
 
 import '../../fish_redux.dart';
 import '../redux/redux.dart';
-import '../utils/utils.dart';
 import 'basic.dart';
 import 'context.dart';
-import 'debug_or_report.dart';
 import 'dependencies.dart';
 import 'lifecycle.dart';
 import 'logic.dart';
-import 'page_store.dart';
-import 'provider.dart';
 
 /// Wrapper ComponentWidget if needed like KeepAlive, RepaintBoundary etc.
 typedef WidgetWrapper = Widget Function(Widget child);
 
 @immutable
 abstract class Component<T> extends Logic<T> implements AbstractComponent<T> {
-  final ViewBuilder<T> view;
-  final ShouldUpdate<T> shouldUpdate;
-  final WidgetWrapper wrapper;
+  final ViewBuilder<T> _view;
+  final ShouldUpdate<T> _shouldUpdate;
+  final WidgetWrapper _wrapper;
+
+  ViewBuilder<T> get protectedView => _view;
+  ShouldUpdate<T> get protectedShouldUpdate => _shouldUpdate;
+  WidgetWrapper get protectedWrapper => _wrapper;
 
   Component({
-    @required this.view,
+    @required ViewBuilder<T> view,
     Reducer<T> reducer,
     ReducerFilter<T> filter,
     Effect<T> effect,
     HigherEffect<T> higherEffect,
-    OnError<T> onError,
     Dependencies<T> dependencies,
     ShouldUpdate<T> shouldUpdate,
     WidgetWrapper wrapper,
     Key Function(T) key,
   })  : assert(view != null),
-        wrapper = wrapper ?? _wrapperByDefault,
-        shouldUpdate = shouldUpdate ?? updateByDefault<T>(),
+        _view = view,
+        _wrapper = wrapper ?? _wrapperByDefault,
+        _shouldUpdate = shouldUpdate ?? updateByDefault<T>(),
         super(
           reducer: reducer,
           filter: filter,
           effect: effect,
           higherEffect: higherEffect,
-          onError: onError,
           dependencies: dependencies,
           key: key,
         );
 
   @override
-  Widget buildComponent(PageStore<Object> store, Get<Object> getter) {
-    return wrapper(
-      _ComponentWidget<T>(
+  Widget buildComponent(MixedStore<Object> store, Get<Object> getter) {
+    return protectedWrapper(
+      ComponentWidget<T>(
         component: this,
         getter: _asGetter<T>(getter),
         store: store,
@@ -57,48 +56,44 @@ abstract class Component<T> extends Logic<T> implements AbstractComponent<T> {
     );
   }
 
-  ViewBuilder<T> createViewBuilder() {
-    return isDebug()
-        ? view
-        : (T state, Dispatch dispatch, ViewService viewService) {
-            Widget result;
-            try {
-              result = view(state, dispatch, viewService);
-            } catch (e, stackTrace) {
-              /// the upper layer decides how to consume the error.
-              dispatch($DebugOrReportCreator.reportBuildError(e, stackTrace));
-              result = Container();
-            }
-            return result;
-          };
-  }
-
   @override
-  ViewUpdater<T> createViewUpdater(T init) =>
-      _ViewUpdater<T>(createViewBuilder(), shouldUpdate, name, init);
+  ViewUpdater<T> createViewUpdater(
+    ContextSys<T> ctx,
+    void Function() markNeedsBuild,
+  ) =>
+      _ViewUpdater<T>(
+        view: ctx.store.viewEnhance(protectedView, this),
+        ctx: ctx,
+        markNeedsBuild: markNeedsBuild,
+        shouldUpdate: protectedShouldUpdate,
+        name: name,
+      );
 
   @override
   ContextSys<T> createContext({
-    PageStore<Object> store,
-    Get<BuildContext> getBuildContext,
+    MixedStore<Object> store,
+    BuildContext buildContext,
     Get<T> getState,
   }) {
     /// init context
     final ContextSys<T> mainCtx = super.createContext(
       store: store,
-      getBuildContext: getBuildContext,
+      buildContext: buildContext,
       getState: getState,
     );
 
-    final ContextSys<T> sidecarCtx = dependencies?.adapter?.createContext(
+    final ContextSys<T> sidecarCtx =
+        protectedDependencies?.adapter?.createContext(
       store: store,
-      getBuildContext: getBuildContext,
+      buildContext: buildContext,
       getState: getState,
     );
 
     /// adapter-effect-promote
     return mergeContext(mainCtx, sidecarCtx);
   }
+
+  ComponentState<T> createState() => ComponentState<T>();
 
   String get name => cache<String>('name', () => runtimeType.toString());
 
@@ -127,43 +122,53 @@ abstract class Component<T> extends Logic<T> implements AbstractComponent<T> {
 
 class _ViewUpdater<T> implements ViewUpdater<T> {
   final ViewBuilder<T> view;
+  final void Function() markNeedsBuild;
   final ShouldUpdate<T> shouldUpdate;
   final String name;
+  final ContextSys<T> ctx;
 
   Widget _widgetCache;
   T _latestState;
 
-  _ViewUpdater(this.view, this.shouldUpdate, this.name, this._latestState)
-      : assert(view != null),
-        assert(shouldUpdate != null);
+  _ViewUpdater({
+    @required this.view,
+    @required this.ctx,
+    @required this.markNeedsBuild,
+    @required this.shouldUpdate,
+    this.name,
+  })  : assert(view != null),
+        assert(shouldUpdate != null),
+        assert(ctx != null),
+        assert(markNeedsBuild != null),
+        _latestState = ctx.state;
 
   @override
-  Widget buildView(T state, Dispatch dispatch, ViewService viewService) {
-    if (_widgetCache == null) {
-      _widgetCache = view(state, dispatch, viewService);
+  Widget buildWidget() {
+    Widget result = _widgetCache;
+    if (result == null) {
+      result = _widgetCache = view(ctx.state, ctx.dispatch, ctx);
 
-      dispatch(LifecycleCreator.build());
-
-      /// to watch component's update in debug-mode
-      assert(() {
-        dispatch($DebugOrReportCreator.debugUpdate(name));
-        return true;
-      }());
+      ctx.dispatch(LifecycleCreator.build(name));
     }
-    return _widgetCache;
+    return result;
   }
 
   @override
-  void onNotify(T now, void Function() markNeedsBuild, Dispatch dispatch) {
+  void didUpdateWidget() {
+    final T now = ctx.state;
     if (shouldUpdate(_latestState, now)) {
       _widgetCache = null;
-      try {
-        markNeedsBuild();
-      } on FlutterError catch (e) {
-        /// 应该区分不同模式下的处理策略？
-        dispatch(
-            $DebugOrReportCreator.reportSetStateError(e, StackTrace.current));
-      }
+      _latestState = now;
+    }
+  }
+
+  @override
+  void onNotify() {
+    final T now = ctx.state;
+    if (shouldUpdate(_latestState, now)) {
+      _widgetCache = null;
+
+      markNeedsBuild();
 
       _latestState = now;
     }
@@ -173,210 +178,114 @@ class _ViewUpdater<T> implements ViewUpdater<T> {
   void reassemble() {
     _widgetCache = null;
   }
+
+  @override
+  void forceUpdate() {
+    _widgetCache = null;
+
+    try {
+      markNeedsBuild();
+    } catch (e) {
+      /// TODO
+      /// should try-catch in force mode which is called from outside
+    }
+  }
 }
 
-class _ComponentWidget<T> extends StatefulWidget {
+class ComponentWidget<T> extends StatefulWidget {
   final Component<T> component;
-  final PageStore<Object> store;
+  final MixedStore<Object> store;
   final Get<T> getter;
 
-  const _ComponentWidget({
+  const ComponentWidget({
     @required this.component,
     @required this.store,
     @required this.getter,
-    Broadcast broadcast,
     Key key,
-  })  : assert(store != null && getter != null),
+  })  : assert(component != null),
+        assert(store != null),
+        assert(getter != null),
         super(key: key);
 
   @override
-  _ComponentState<T> createState() => _ComponentState<T>();
+  ComponentState<T> createState() => component.createState();
 }
 
-class _ComponentState<T> extends State<_ComponentWidget<T>> {
-  ContextSys<T> _mainCtx;
-  ViewUpdater<T> _viewUpdater;
+class ComponentState<T> extends State<ComponentWidget<T>> {
+  ContextSys<T> mainCtx;
+  ViewUpdater<T> viewUpdater;
 
+  @mustCallSuper
   @override
-  Widget build(BuildContext context) =>
-      _viewUpdater.buildView(_mainCtx.state, _mainCtx.dispatch, _mainCtx);
+  Widget build(BuildContext context) => viewUpdater.buildWidget();
 
   @override
   @protected
   @mustCallSuper
   void reassemble() {
     super.reassemble();
-    _viewUpdater.reassemble();
+    viewUpdater.reassemble();
+    mainCtx.onLifecycle(LifecycleCreator.reassemble());
   }
 
+  @mustCallSuper
   @override
   void initState() {
     super.initState();
 
     /// init context
-    _mainCtx = widget.component.createContext(
+    mainCtx = widget.component.createContext(
       store: widget.store,
-      getBuildContext: () => context,
+      buildContext: context,
       getState: () => widget.getter(),
     );
 
-    _viewUpdater = widget.component.createViewUpdater(_mainCtx.state);
-
-    /// register store.subscribe
-    _mainCtx
-      ..registerOnDisposed(widget.store.subscribe(_onNotify))
-      ..onLifecycle(LifecycleCreator.initState());
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _mainCtx.onLifecycle(LifecycleCreator.didChangeDependencies());
-  }
-
-  @override
-  void deactivate() {
-    super.deactivate();
-    _mainCtx.onLifecycle(LifecycleCreator.deactivate());
-  }
-
-  @override
-  void didUpdateWidget(_ComponentWidget<T> oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    _onNotify();
-    _mainCtx.onLifecycle(LifecycleCreator.didUpdateWidget());
-  }
-
-  @override
-  void dispose() {
-    _mainCtx
-      ..onLifecycle(LifecycleCreator.dispose())
-      ..dispose();
-    super.dispose();
-  }
-
-  void _onNotify() {
-    _viewUpdater.onNotify(_mainCtx.state, () {
+    viewUpdater = widget.component.createViewUpdater(mainCtx, () {
       if (mounted) {
         setState(() {});
       }
-    }, _mainCtx.dispatch);
-  }
-}
+    });
 
-/// init store's state by route-params
-typedef InitState<T extends Cloneable<T>, P> = T Function(P params);
+    //// force update if driven from outside
+    mainCtx.bindForceUpdate(() {
+      viewUpdater.forceUpdate();
+    });
 
-@immutable
-abstract class Page<T extends Cloneable<T>, P> extends Component<T> {
-  final List<Middleware<T>> middlewares;
-  final InitState<T, P> initState;
+    /// register store.subscribe
+    mainCtx.registerOnDisposed(
+        widget.store.subscribe(() => viewUpdater.onNotify()));
 
-  Page({
-    @required this.initState,
-    this.middlewares,
-    @required ViewBuilder<T> view,
-    Reducer<T> reducer,
-    ReducerFilter<T> filter,
-    Effect<T> effect,
-    HigherEffect<T> higherEffect,
-    OnError<T> onError,
-    Dependencies<T> dependencies,
-    ShouldUpdate<T> shouldUpdate,
-    WidgetWrapper wrapper,
-    Key Function(T) key,
-  })  : assert(initState != null),
-        super(
-          view: view,
-          dependencies: dependencies,
-          reducer: reducer,
-          filter: filter,
-          effect: effect,
-          higherEffect: higherEffect,
-          onError: onError,
-          shouldUpdate: shouldUpdate,
-          wrapper: wrapper,
-          key: key,
-        );
-
-  /// Expansion capability
-  List<Middleware<T>> buildMiddlewares(List<Middleware<T>> middlewares) {
-    return Collections.merge<Middleware<T>>(
-        <Middleware<T>>[interrupt$<T>()], middlewares);
+    mainCtx.onLifecycle(LifecycleCreator.initState());
   }
 
-  Widget buildPage(P param) {
-    return wrapper(_PageWidget<T>(
-      component: this,
-      storeBuilder: () => createPageStore<T>(
-            initState(param),
-            reducer,
-            applyMiddleware<T>(buildMiddlewares(middlewares)),
-          ),
-    ));
-  }
-
-  static Middleware<T> interrupt$<T>() {
-    return ({Dispatch dispatch, Get<T> getState}) {
-      return (Dispatch next) {
-        return (Action action) {
-          if (!shouldBeInterrupttedBeforeReducer(action)) {
-            next(action);
-          }
-        };
-      };
-    };
-  }
-}
-
-class _PageWidget<T> extends StatefulWidget {
-  final Component<T> component;
-  final Get<PageStore<T>> storeBuilder;
-
-  const _PageWidget({
-    Key key,
-    @required this.component,
-    @required this.storeBuilder,
-  }) : super(key: key);
-
-  @override
-  State<StatefulWidget> createState() => _PageState<T>();
-}
-
-class _PageState<T> extends State<_PageWidget<T>> {
-  PageStore<T> _store;
-  final Map<String, Object> extra = <String, Object>{};
-
-  void Function() unregister;
-
-  @override
-  void initState() {
-    super.initState();
-    _store = widget.storeBuilder();
-  }
-
+  @mustCallSuper
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-
-    /// Register inter-page broadcast
-    unregister?.call();
-    unregister = AppProvider.register(context, _store.sendBroadcast);
+    mainCtx.onLifecycle(LifecycleCreator.didChangeDependencies());
   }
 
+  @mustCallSuper
   @override
-  Widget build(BuildContext context) {
-    return PageProvider(
-      store: _store,
-      extra: extra,
-      child: widget.component.buildComponent(_store, _store.getState),
-    );
+  void deactivate() {
+    super.deactivate();
+    mainCtx.onLifecycle(LifecycleCreator.deactivate());
   }
 
+  @mustCallSuper
+  @override
+  void didUpdateWidget(ComponentWidget<T> oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    viewUpdater.didUpdateWidget();
+    mainCtx.onLifecycle(LifecycleCreator.didUpdateWidget());
+  }
+
+  @mustCallSuper
   @override
   void dispose() {
-    unregister?.call();
-    unregister = null;
+    mainCtx
+      ..onLifecycle(LifecycleCreator.dispose())
+      ..dispose();
     super.dispose();
   }
 }

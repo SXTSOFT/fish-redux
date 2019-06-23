@@ -1,14 +1,17 @@
 import 'dart:async';
 
-import 'package:flutter/widgets.dart';
+import 'package:flutter/widgets.dart' hide Action;
 
 import '../redux/basic.dart';
+import '../utils/utils.dart';
 import 'basic.dart';
 
 AdapterBuilder<T> asAdapter<T>(ViewBuilder<T> view) {
-  return (T state, Dispatch dispatch, ViewService service) {
+  return (T unstableState, Dispatch dispatch, ViewService service) {
+    final ContextSys<T> ctx = service;
     return ListAdapter(
-      (BuildContext buildContext, int index) => view(state, dispatch, service),
+      (BuildContext buildContext, int index) =>
+          view(ctx.state, dispatch, service),
       1,
     );
   };
@@ -26,13 +29,19 @@ Effect<T> mergeEffects<T extends K, K>(Effect<K> sup, [Effect<T> sub]) {
   };
 }
 
-//combine & as
-Reducer<T> asReducer<T>(
-        Map<Object, Reducer<T>> map) =>
-    (map == null || map.isEmpty)
-        ? null
-        : (T state, Action action) =>
-            map[action.type]?.call(state, action) ?? state;
+/// combine & as
+/// for action.type which override it's == operator
+Reducer<T> asReducer<T>(Map<Object, Reducer<T>> map) => (map == null ||
+        map.isEmpty)
+    ? null
+    : (T state, Action action) =>
+        map.entries
+            .firstWhere(
+                (MapEntry<Object, Reducer<T>> entry) =>
+                    action.type == entry.key,
+                orElse: () => null)
+            ?.value(state, action) ??
+        state;
 
 Reducer<T> filterReducer<T>(Reducer<T> reducer, ReducerFilter<T> filter) {
   return (reducer == null || filter == null)
@@ -44,18 +53,47 @@ Reducer<T> filterReducer<T>(Reducer<T> reducer, ReducerFilter<T> filter) {
 
 typedef SubEffect<T> = FutureOr<void> Function(Action action, Context<T> ctx);
 
+/// for action.type which override it's == operator
 Effect<T> combineEffects<T>(Map<Object, SubEffect<T>> map) =>
     (map == null || map.isEmpty)
         ? null
         : (Action action, Context<T> ctx) {
-            final SubEffect<T> subEffect = map[action.type];
+            final SubEffect<T> subEffect = map.entries
+                .firstWhere(
+                    (MapEntry<Object, SubEffect<T>> entry) =>
+                        action.type == entry.key,
+                    orElse: () => null)
+                ?.value;
             return subEffect?.call(action, ctx) ?? subEffect != null;
           };
-
-OnError<T> combineOnErrors<T>(List<OnError<T>> onErrors) =>
-    (Exception exception, Context<T> ctx) =>
-        onErrors.any((OnError<T> onError) => onError(exception, ctx));
 
 HigherEffect<T> asHigherEffect<T>(Effect<T> effect) => effect != null
     ? (Context<T> ctx) => (Action action) => effect(action, ctx)
     : null;
+
+ViewMiddleware<T> mergeViewMiddleware<T>(List<ViewMiddleware<T>> middleware) {
+  return Collections.reduce<ViewMiddleware<T>>(middleware,
+      (ViewMiddleware<T> first, ViewMiddleware<T> second) {
+    return (AbstractComponent<dynamic> component, MixedStore<T> store) {
+      final Composable<ViewBuilder<dynamic>> inner = first(component, store);
+      final Composable<ViewBuilder<dynamic>> outer = second(component, store);
+      return (ViewBuilder<dynamic> view) {
+        return outer(inner(view));
+      };
+    };
+  });
+}
+
+EffectMiddleware<T> mergeEffectMiddleware<T>(
+    List<EffectMiddleware<T>> middleware) {
+  return Collections.reduce<EffectMiddleware<T>>(middleware,
+      (EffectMiddleware<T> first, EffectMiddleware<T> second) {
+    return (AbstractLogic<dynamic> logic, MixedStore<T> store) {
+      final Composable<HigherEffect<dynamic>> inner = first(logic, store);
+      final Composable<HigherEffect<dynamic>> outer = second(logic, store);
+      return (HigherEffect<dynamic> higherEffect) {
+        return outer(inner(higherEffect));
+      };
+    };
+  });
+}

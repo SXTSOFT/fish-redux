@@ -1,4 +1,4 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/widgets.dart' hide Action;
 
 import '../redux/redux.dart';
 import 'auto_dispose.dart';
@@ -35,22 +35,24 @@ typedef AdapterBuilder<T> = ListAdapter Function(
 /// 1. How to render
 /// 2. When to update
 abstract class ViewUpdater<T> {
-  Widget buildView(T state, Dispatch dispatch, ViewService viewService);
-  void onNotify(T now, void Function() markNeedsBuild, Dispatch dispatch);
+  Widget buildWidget();
+  void didUpdateWidget();
+  void onNotify();
+  void forceUpdate();
   void reassemble();
 }
 
 /// A little different with Dispatch (with if it is interrupted).
-/// bool for sync-functions , interrupted if true
-/// Futur<void> for async-functions ,should always be interrupted,
+/// bool for sync-functions, interrupted if true
+/// Futur<void> for async-functions, should always be interrupted.
 typedef OnAction = dynamic Function(Action action);
 
 /// Predicate if a component should be updated when the store is changed.
 typedef ShouldUpdate<T> = bool Function(T old, T now);
 
 /// Interrupt if not null not false
-/// bool for sync-functions , interrupted if true
-/// Futur<void> for async-functions ,should always be interrupted,
+/// bool for sync-functions, interrupted if true
+/// Futur<void> for async-functions, should always be interrupted.
 typedef Effect<T> = dynamic Function(Action action, Context<T> ctx);
 
 /// Because Effect<T> is an aysnc-function, if it has some self-state, we should use HigherEffect<T>
@@ -59,33 +61,91 @@ typedef HigherEffect<T> = OnAction Function(Context<T> ctx);
 /// If an exception is thrown out, we may have some need to handle it.
 typedef OnError<T> = bool Function(Exception exception, Context<T> ctx);
 
-abstract class Broadcast {
-  /// Broadcast in all receivers;
-  void sendBroadcast(Action action, {OnAction excluded});
+/// todo
+abstract class EffectBroadcast {
+  /// Broadcast in all component receivers;
+  void broadcastEffect(Action action, {Dispatch excluded});
 
   /// Register a receiver and return the unregister function
-  void Function() registerReceiver(OnAction onAction);
+  void Function() registerComponentReceiver(Dispatch dispatch);
 }
 
-/// A store with broadcast
-abstract class PageStore<T> extends Store<T> implements Broadcast {}
+/// todo
+abstract class InterStoreBroadcast {
+  /// Broadcast in all store receivers;
+  void broadcast(Action action, {Dispatch excluded});
+
+  /// Register a receiver and return the unregister function
+  void Function() registerStoreReceiver(Dispatch dispatch);
+}
+
+/// todo
+abstract class SlotBuilder {
+  /// <String, Dependent<T>> slots
+  Widget buildComponent(String name);
+}
+
+/// todo
+typedef EffectMiddleware<T> = Composable<HigherEffect<dynamic>> Function(
+    AbstractLogic<dynamic>, MixedStore<T>);
+
+// todo
+typedef ViewMiddleware<T> = Composable<ViewBuilder<dynamic>> Function(
+    AbstractComponent<dynamic>, MixedStore<T>);
+
+typedef AdapterMiddleware<T> = Composable<AdapterBuilder<dynamic>> Function(
+    AbstractAdapter<dynamic>, MixedStore<T>);
+
+/// todo
+abstract class ViewEnhancer<T> {
+  ViewBuilder<K> viewEnhance<K>(
+    ViewBuilder<K> view,
+    AbstractComponent<K> component,
+  );
+}
+
+/// todo
+abstract class AdapterEnhancer<T> {
+  AdapterBuilder<K> adapterEnhance<K>(
+    AdapterBuilder<K> adapterBuilder,
+    AbstractAdapter<K> logic,
+  );
+}
+
+/// todo
+abstract class EffectEnhancer<T> {
+  HigherEffect<K> effectEnhance<K>(
+    HigherEffect<K> higherEffect,
+    AbstractLogic<K> logic,
+  );
+}
+
+/// A mixed store with inter-component, inter-store communication & slot-build
+abstract class MixedStore<T> extends Store<T>
+    implements
+        EffectBroadcast,
+        InterStoreBroadcast,
+        SlotBuilder,
+        ViewEnhancer<T>,
+        AdapterEnhancer<T>,
+        EffectEnhancer<T> {}
 
 /// Seen in view-part or adapter-part
 abstract class ViewService {
-  /// The way to build adapter which is configed in Dependencies.adapter
+  /// The way to build adapter which is configured in Dependencies.adapter
   ListAdapter buildAdapter();
 
-  /// The way to build slot component which is configed in Dependencies.slots
+  /// The way to build slot component which is configured in Dependencies.slots
   Widget buildComponent(String name);
 
   /// Get BuildContext from the host-widget
   BuildContext get context;
 
   /// Broadcast action(the intent) in app (inter-pages)
-  void appBroadcast(Action action);
+  void broadcast(Action action);
 
-  /// Broadcast action(the intent) in page (inter-components)
-  void pageBroadcast(Action action, {bool excluedSelf});
+  /// Broadcast in all component receivers;
+  void broadcastEffect(Action action, {bool excluded});
 }
 
 ///  Seen in effect-part
@@ -94,25 +154,57 @@ abstract class Context<T> extends AutoDispose {
   T get state;
 
   /// The way to send action, which will be consumed by self, or by broadcast-module and store.
-  Dispatch get dispatch;
+  dynamic dispatch(Action action);
 
   /// Get BuildContext from the host-widget
   BuildContext get context;
 
+  /// In general, we should not need this field.
+  /// When we have to use this field, it means that we have encountered difficulties.
+  /// This is a contradiction between presentation & logical separation, and Flutter's Widgets system.
+  ///
+  /// How to use ?
+  /// For example, we want to use SingleTickerProviderStateMixin
+  /// We should
+  /// 1. Define a new ComponentState
+  ///    class CustomStfState<T> extends ComponentState<T> with SingleTickerProviderStateMixin {}
+  /// 2. Override the createState method of the Component with the newly defined CustomStfState.
+  ///    @override
+  ///    CustomStfState createState() => CustomStfState();
+  /// 3. Get the CustomStfState via context.stfState in Effect.
+  ///    /// Through BuildContext -> StatefulElement -> State
+  ///    final TickerProvider tickerProvider = context.stfState;
+  ///    AnimationController controller = AnimationController(vsync: tickerProvider);
+  ///    context.dispatch(ActionCreator.createController(controller));
+  State get stfState;
+
   /// Get|Set extra data in context if needed.
   Map<String, Object> get extra;
 
-  /// Broadcast action in app (inter-pages)
-  void appBroadcast(Action action);
+  /// The way to build slot component which is configured in Dependencies.slots
+  /// such as custom mask or dialog
+  Widget buildComponent(String name);
 
-  /// Broadcast action in page (inter-components)
-  void pageBroadcast(Action action, {bool excluedSelf});
+  /// Broadcast action in app (inter-stores)
+  void broadcast(Action action);
+
+  /// Broadcast in all component receivers;
+  void broadcastEffect(Action action, {bool excluded});
+
+  /// add observable
+  void Function() addObservable(Subscribe observable);
+
+  void forceUpdate();
 }
 
 /// Seen in framework-component
 abstract class ContextSys<T> extends Context<T> implements ViewService {
   /// Response to lifecycle calls
   void onLifecycle(Action action);
+
+  void bindForceUpdate(void Function() forceUpdate);
+
+  MixedStore<dynamic> get store;
 }
 
 /// Representation of each dependency
@@ -121,7 +213,7 @@ abstract class Dependent<T> {
 
   SubReducer<T> createSubReducer();
 
-  Widget buildComponent(PageStore<Object> store, Get<T> getter);
+  Widget buildComponent(MixedStore<Object> store, Get<T> getter);
 
   /// P state
   ListAdapter buildAdapter(
@@ -131,8 +223,8 @@ abstract class Dependent<T> {
   );
 
   ContextSys<Object> createContext({
-    PageStore<Object> store,
-    Get<BuildContext> getBuildContext,
+    MixedStore<Object> store,
+    BuildContext buildContext,
     Get<T> getState,
   });
 
@@ -151,22 +243,22 @@ abstract class AbstractLogic<T> {
   Object onReducer(Object state, Action action);
 
   /// To create each instance's side-effect-action-handler
-  OnAction createHandlerOnAction(Context<T> ctx);
+  OnAction createHandlerOnAction(ContextSys<T> ctx);
 
   /// To create each instance's broadcast-handler
   /// It is same as side-effect-action-handler by defalut.
   OnAction createHandlerOnBroadcast(
-      OnAction onAction, Context<T> ctx, Dispatch parentDispatch);
+      OnAction onAction, ContextSys<T> ctx, Dispatch parentDispatch);
 
   /// To create each instance's dispatch
   /// Dispatch is the most important api for users which is provided by framework
   Dispatch createDispatch(
-      OnAction onAction, Context<T> ctx, Dispatch parentDispatch);
+      OnAction onAction, ContextSys<T> ctx, Dispatch parentDispatch);
 
   /// To create each instance's context
   ContextSys<T> createContext({
-    PageStore<Object> store,
-    Get<BuildContext> getBuildContext,
+    MixedStore<Object> store,
+    BuildContext buildContext,
     Get<T> getState,
   });
 
@@ -174,7 +266,8 @@ abstract class AbstractLogic<T> {
   Object key(T state);
 
   /// It's a convenient way to create a dependency
-  Dependent<K> asDependent<K>(Connector<K, T> connector);
+  @deprecated
+  Dependent<K> asDependent<K>(AbstractConnector<K, T> connector);
 
   /// Find a dependent by name
   Dependent<T> slot(String name);
@@ -182,10 +275,13 @@ abstract class AbstractLogic<T> {
 
 abstract class AbstractComponent<T> implements AbstractLogic<T> {
   /// How to render & How to update
-  ViewUpdater<T> createViewUpdater(T init);
+  ViewUpdater<T> createViewUpdater(
+    ContextSys<T> ctx,
+    void Function() markNeedsBuild,
+  );
 
   /// How to build component instance
-  Widget buildComponent(PageStore<Object> store, Get<T> getter);
+  Widget buildComponent(MixedStore<Object> store, Get<T> getter);
 }
 
 abstract class AbstractAdapter<T> implements AbstractLogic<T> {

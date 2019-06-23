@@ -4,9 +4,8 @@ import 'action.dart';
 import 'state.dart';
 
 Reducer<TodoEditState> buildReducer() {
-  return asReducer<TodoEditState>(<Object, Reducer<TodoEditState>>{
-    ToDoEditAction.update: _update,
-  });
+  return asReducer<TodoEditState>(
+      <Object, Reducer<TodoEditState>>{ToDoEditAction.update: _update});
 }
 
 TodoEditState _update(TodoEditState state, Action action) {

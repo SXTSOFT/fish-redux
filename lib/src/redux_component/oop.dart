@@ -1,4 +1,4 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/widgets.dart' hide Action;
 
 import '../redux/redux.dart';
 import '../utils/utils.dart';
@@ -24,7 +24,10 @@ class _BasePart<T> {
     return true;
   }
 
-  VoidCallback bindAction(Action action) => () => dispatch(action);
+  VoidCallback bindAction(Action action) {
+    final Dispatch current = dispatch;
+    return () => current(action);
+  }
 }
 
 @immutable
@@ -77,6 +80,8 @@ abstract class EffectPart<T> extends AutoDispose {
     return true;
   }
 }
+
+abstract class ComponentOOP<T> {}
 
 HigherEffect<T> higherEffect<T>(EffectPart<T> Function() builder) {
   return (Context<T> ctx) {

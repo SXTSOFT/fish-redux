@@ -1,4 +1,4 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/widgets.dart' hide Action;
 
 import '../redux/redux.dart';
 import '../redux_component/context.dart';
@@ -7,18 +7,18 @@ import '../redux_component/redux_component.dart';
 class RecycleContext<T> extends DefaultContext<T> {
   final Map<Object, List<ContextSys<Object>>> _cachedMap =
       <Object, List<ContextSys<Object>>>{};
-  final Map<Object, int> _usedIndextMap = <Object, int>{};
+  final Map<Object, int> _usedIndexMap = <Object, int>{};
 
   RecycleContext({
-    AbstractLogic<T> factors,
-    PageStore<Object> store,
-    Get<BuildContext> getBuildContext,
+    AbstractLogic<T> logic,
+    MixedStore<Object> store,
+    BuildContext buildContext,
     Get<T> getState,
   }) : super(
-          factors: factors,
+          logic: logic,
           store: store,
+          buildContext: buildContext,
           getState: getState,
-          getBuildContext: getBuildContext,
         );
 
   @override
@@ -33,11 +33,11 @@ class RecycleContext<T> extends DefaultContext<T> {
   }
 
   void markAllUnused() {
-    _usedIndextMap.clear();
+    _usedIndexMap.clear();
   }
 
   ContextSys<Object> reuseOrCreate(Object key, Get<ContextSys<Object>> create) {
-    final int length = _usedIndextMap[key] = (_usedIndextMap[key] ?? 0) + 1;
+    final int length = _usedIndexMap[key] = (_usedIndexMap[key] ?? 0) + 1;
     final List<ContextSys<Object>> list =
         _cachedMap[key] ??= <ContextSys<Object>>[];
 
@@ -54,7 +54,7 @@ class RecycleContext<T> extends DefaultContext<T> {
 
   void cleanUnused() {
     _cachedMap.removeWhere((Object key, List<ContextSys<Object>> value) {
-      final int usedCount = _usedIndextMap[key] ?? 0;
+      final int usedCount = _usedIndexMap[key] ?? 0;
 
       for (int i = usedCount; i < value.length; i++) {
         value[i].onLifecycle(LifecycleCreator.dispose());
@@ -67,17 +67,17 @@ class RecycleContext<T> extends DefaultContext<T> {
   }
 }
 
-abstract class RecycleContextMixin<T> implements Logic<T> {
+mixin RecycleContextMixin<T> on Logic<T> {
   @override
   RecycleContext<T> createContext({
-    PageStore<Object> store,
-    Get<BuildContext> getBuildContext,
+    MixedStore<Object> store,
+    BuildContext buildContext,
     Get<T> getState,
   }) {
     return RecycleContext<T>(
-      factors: this,
+      logic: this,
       store: store,
-      getBuildContext: getBuildContext,
+      buildContext: buildContext,
       getState: getState,
     );
   }
@@ -89,6 +89,7 @@ ListAdapter combineListAdapters(Iterable<ListAdapter> adapters) {
       .toList(growable: false);
 
   if (list.every((ListAdapter e) => e.itemCount == 1)) {
+    /// The result is AbstractComponent
     return ListAdapter(
       (BuildContext buildContext, final int index) =>
           list[index].itemBuilder(buildContext, 0),
@@ -102,6 +103,7 @@ ListAdapter combineListAdapters(Iterable<ListAdapter> adapters) {
     return count + adapter.itemCount;
   });
 
+  /// The result is AbstractAdapter
   return ListAdapter(
     (BuildContext buildContext, final int index) {
       assert(index >= 0 && index < maxItemCount);
